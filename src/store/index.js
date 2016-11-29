@@ -10,7 +10,7 @@ const debug = process.env.NODE_ENV !== 'production';
 
 export default new Vuex.Store({
   modules: {
-    cognito: new CognitoAuth,
+    cognito: new CognitoAuth(),
   },
   strict: debug,
   // plugins: debug ? [createLogger()] : [],
