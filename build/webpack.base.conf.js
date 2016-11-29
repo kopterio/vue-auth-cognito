@@ -55,8 +55,8 @@ module.exports = {
       {
         test: /\.js$/,
         loader: 'babel',
-        include: projectRoot,
-        exclude: /node_modules/
+        include: [ projectRoot, /node_modules\/amazon-cognito-identity-js/ ],
+        exclude: /node_modules\/(?!amazon-cognito-identity-js)/
       },
       {
         test: /\.json$/,
