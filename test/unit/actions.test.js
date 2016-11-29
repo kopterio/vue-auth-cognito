@@ -1,83 +1,83 @@
 import test from 'tape';
+import proxyquire from 'proxyquire';
+import * as sinon from 'sinon';
 
-// import proxyquire from 'proxyquire'
+import * as types from '../../lib/mutation-types';
+import cognitoConfig from '../../config/cognito';
 
-// const Actions = proxyquire('../../lib/actions', {
-//   'amazon-cognito-identity-js/src/CognitoUserPool':
-// });
-
-import * as types from '../../lib/mutation-types'
-
-import Actions from '../../lib/actions';
-import config from '../../config/cognito';
+// fixture for user details
+const userInfo = {
+  username: 'test',
+  password: 'Qwerty123!',
+  email: 'test@test.com',
+  name: 'MegaTest',
+  phone_number: '+15553334444',
+};
 
 test('cognito signUp', (t) => {
-  const actions = new Actions(config);
+  const FakeCognitoUserPool = sinon.stub();
+  const cSignUp = FakeCognitoUserPool.prototype.signUp = sinon.stub();
 
-  const userInfo = {
-    username: 'test',
-    password: 'Qwerty123!',
-    email: 'test@test.com',
-    name: 'MegaTest',
-    phone_number: '+155512345'
-  }
+  const actions = proxyquire('../../lib/actions', {
+    'amazon-cognito-identity-js/src/CognitoUserPool': { default: FakeCognitoUserPool },
+  }).default(cognitoConfig); // call the default exported function with config
 
-  t.test('success', (t) => {
-    actions.cognitoUserPool = {
-      signUp: (username, password, attributeList, validationData, callback) => {
-        t.equal(username, userInfo.username, 'cognitoUserPool.signUp should receive username')
-        t.equal(password, userInfo.password, 'cognitoUserPool.signUp should receive password')
-        callback(null, {
-          user: {
-            username: userInfo.username
-          },
-          userConfirmed: false
-        })
-      }
-    }
+  t.plan(3);
+  t.assert('signUp' in actions, 'exported actions contain a signUp method');
 
-    t.plan(5)
+  t.test('successful signup', (tt) => {
+    const commitSpy = sinon.spy();
 
-    const commit = (type, payload) => {
-      t.equal(type, types.SIGNUP, `vuex mutation type should be ${types.SIGNUP}`)
-      t.equal(payload.username, userInfo.username, 'vuex mutation should receive payload.username')
-      t.equal(payload.confirmed, false, 'vuex mutation should receive payload.confirmed')
-    }
+    // call the signUp action as if it is called by vuex
+    actions.signUp({ commit: commitSpy }, userInfo);
 
-    actions.signUp({ commit }, userInfo)
+    tt.plan(6);
 
-    t.end();
-  })
+    tt.ok(cSignUp.called, 'cognitoUserPool.signUp should be called');
+    tt.ok(cSignUp.calledOnce, 'cognitoUserPool.signUp should be called exactly once');
+    tt.ok(cSignUp.calledWith(userInfo.username, userInfo.password),
+      'cognitoUserPool.signUp first two arguments should be username and password');
 
-  t.test('failure', (t) => {
-    actions.cognitoUserPool = {
-      signUp: (username, password, attributeList, validationData, callback) => {
-        /*
-          code: string = "NotAuthorizedException"
-          message: string = "Incorrect username or password"
-          name: string = "NotAuthorizedException"
-          retryDelay: float = 55.49
-          stack: string = "NotAuthorizedException"
-          statusCode: integer = 400
-        */
-        callback({
-          code: "MissingParameter",
-          message: "Incorrect username or password",
-          stack: "" 
-        })
-      }
-    }
+    // CognitoUserPool.signUp calls a callback
+    cSignUp.callArgWith(4, null, {
+      user: { username: userInfo.username },
+      userConfirmed: false,
+    });
 
-    t.plan(1)
+    tt.ok(commitSpy.called, 'state.commit should be called');
+    tt.ok(commitSpy.calledOnce, 'state.commit should be called exactly once');
+    tt.ok(commitSpy.withArgs(types.SIGNUP, {
+      username: userInfo.username,
+      confirmed: false,
+    }), `mutation '${types.SIGNUP}' should receive payload: {user, confirmed}`);
 
-    const commit = (type, payload) => {
-      t.equal(type, types.SIGNUP_FAILURE, `vuex mutation type should be ${types.SIGNUP_FAILURE}`)
-      // t.equal(payload.username, userInfo.username, 'vuex mutation should receive payload.username')
-      // t.equal(payload.confirmed, false, 'vuex mutation should receive payload.confirmed')
-    }
+    tt.end();
+  });
 
-    actions.signUp({ commit }, userInfo)
+  t.test('failed signup', (tt) => {
+    const commitSpy = sinon.spy();
 
-    t.end();
-  })
+    // call the signUp action as if it is called by vuex
+    actions.signUp({ commit: commitSpy }, userInfo);
+
+    const errorMessage = 'Incorrect username or password';
+
+    // CognitoUserPool.signUp calls the callback with an error!
+    cSignUp.callArgWith(4, {
+      code: 'NotAuthorizedException',
+      message: errorMessage,
+      name: 'NotAuthorizedException',
+      retryDelay: 59.43,
+    }, null);
+
+    tt.plan(3);
+    tt.ok(commitSpy.called, 'state.commit should be called');
+    tt.ok(commitSpy.calledOnce, 'state.commit should be called exactly once');
+    tt.ok(commitSpy.withArgs(types.SIGNUP_FAILURE, { errorMessage }),
+      `mutation '${types.SIGNUP_FAILURE}' should receive payload: { error_message }`);
+
+    tt.end();
+  });
+
+  t.end();
 });
