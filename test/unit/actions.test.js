@@ -3,7 +3,13 @@ import proxyquire from 'proxyquire';
 import * as sinon from 'sinon';
 
 import * as types from '../../lib/mutation-types';
-import cognitoConfig from '../../config/cognito';
+
+const fakeCognitoConfig = {
+  Region: 'us-east-1',
+  UserPoolId: 'us-east-1_xxxxxxxxx',
+  ClientId: 'xxxxxxxxxxxxxxxxxxxxxxxxx',
+  IdentityPoolId: 'us-east-1:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'
+};
 
 // fixture for user details
 const userInfo = {
@@ -20,7 +26,7 @@ test('cognito signUp', (t) => {
 
   const actions = proxyquire('../../lib/actions', {
     'amazon-cognito-identity-js/src/CognitoUserPool': { default: FakeCognitoUserPool },
-  }).default(cognitoConfig); // call the default exported function with config
+  }).default(fakeCognitoConfig); // call the default exported function with config
 
   t.plan(3);
   t.assert('signUp' in actions, 'exported actions contain a signUp method');
