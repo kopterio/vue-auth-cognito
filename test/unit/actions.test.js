@@ -8,7 +8,7 @@ const fakeCognitoConfig = {
   Region: 'us-east-1',
   UserPoolId: 'us-east-1_xxxxxxxxx',
   ClientId: 'xxxxxxxxxxxxxxxxxxxxxxxxx',
-  IdentityPoolId: 'us-east-1:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'
+  IdentityPoolId: 'us-east-1:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx',
 };
 
 // fixture for user details
