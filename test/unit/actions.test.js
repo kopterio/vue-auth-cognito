@@ -34,6 +34,12 @@ test('cognito signUp', (t) => {
   t.test('successful signup', (tt) => {
     const commitSpy = sinon.spy();
 
+    // set CognitoUserPool.signUp to call the callback with err:null,data:stuff
+    cSignUp.withArgs(userInfo.username, userInfo.password).yields([null, {
+      user: { username: userInfo.username },
+      userConfirmed: false,
+    }]);
+
     // call the signUp action as if it is called by vuex
     actions.signUp({ commit: commitSpy }, userInfo);
 
@@ -43,12 +49,6 @@ test('cognito signUp', (t) => {
     tt.ok(cSignUp.calledOnce, 'cognitoUserPool.signUp should be called exactly once');
     tt.ok(cSignUp.calledWith(userInfo.username, userInfo.password),
       'cognitoUserPool.signUp first two arguments should be username and password');
-
-    // CognitoUserPool.signUp calls a callback
-    cSignUp.callArgWith(4, null, {
-      user: { username: userInfo.username },
-      userConfirmed: false,
-    });
 
     tt.ok(commitSpy.called, 'state.commit should be called');
     tt.ok(commitSpy.calledOnce, 'state.commit should be called exactly once');
@@ -63,18 +63,20 @@ test('cognito signUp', (t) => {
   t.test('failed signup', (tt) => {
     const commitSpy = sinon.spy();
 
-    // call the signUp action as if it is called by vuex
-    actions.signUp({ commit: commitSpy }, userInfo);
-
     const errorMessage = 'Incorrect username or password';
 
-    // CognitoUserPool.signUp calls the callback with an error!
-    cSignUp.callArgWith(4, {
+    // set CognitoUserPool.signUp to call the callback with an error!
+    cSignUp.withArgs('gooduser', 'wrongpassword').yields([{
       code: 'NotAuthorizedException',
       message: errorMessage,
       name: 'NotAuthorizedException',
       retryDelay: 59.43,
-    }, null);
+    }, null]);
+
+    // call the signUp action as if it is called by vuex
+    actions.signUp({ commit: commitSpy }, Object.assign(
+      userInfo, { username: 'gooduser', password: 'wrongpassword' }
+    ));
 
     tt.plan(3);
     tt.ok(commitSpy.called, 'state.commit should be called');
