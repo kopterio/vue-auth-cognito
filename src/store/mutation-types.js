@@ -1,3 +1,0 @@
-// auth
-export const AUTHENTICATE = 'auth/AUTHENTICATE';
-export const AUTHENTICATE_FAILURE = 'auth/AUTHENTICATE_FAILURE';

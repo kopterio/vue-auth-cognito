@@ -14,13 +14,6 @@ import CognitoUserAttribute from 'amazon-cognito-identity-js/src/CognitoUserAttr
 // comes and provides the SRP implementation and a wrapper around Cognito APIs.
 // https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/CognitoIdentityServiceProvider.html
 
-const authConfig = {
-  region: 'us-east-1',
-  IdentityPoolId: 'us-east-1:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx',
-  UserPoolId: 'us-east-1_xxxxxxxxx',
-  ClientId: 'xxxxxxxxxxxxxxxxxxxxxxxxx',
-};
-
 /* eslint-disable no-console */ // <=== DEBUG
 
 /** @class
@@ -28,10 +21,15 @@ const authConfig = {
  */
 export default class AuthService {
 
-  constructor() {
+  /*
+    config:
+      UserPoolId
+      ClientId
+  */
+  constructor(config) {
     this.cognitoUserPool = new CognitoUserPool({
-      UserPoolId: authConfig.UserPoolId,
-      ClientId: authConfig.ClientId,
+      UserPoolId: config.UserPoolId,
+      ClientId: config.ClientId,
       Paranoia: 6,
     });
     this.cognitoUser = new CognitoUser({
