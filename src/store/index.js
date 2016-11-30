@@ -8,11 +8,12 @@ import CognitoAuth from '../../lib';
 Vue.use(Vuex);
 
 const debug = process.env.NODE_ENV !== 'production';
+const devenv = process.env.NODE_ENV === 'dev';
 
 export default new Vuex.Store({
   modules: {
     cognito: new CognitoAuth(cognitoConfig),
   },
   strict: debug,
-  plugins: debug ? [createLogger()] : [],
+  plugins: devenv ? [createLogger()] : [],
 });
