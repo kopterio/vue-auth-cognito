@@ -33,10 +33,10 @@
 <script>
 export default {
   name: 'Login',
-  data: {
-    username: 'yourmail@example.com',
-    password: 'VerySecret123!',
-  },
+  data: () => ({
+    username: '',
+    password: '',
+  }),
 };
 </script>
 
