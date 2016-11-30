@@ -28,7 +28,7 @@
                 <div class="form-group">
                   <input class="form-control" placeholder="Password" name="password" type="password" :value="password" >
                 </div>
-                <input class="btn btn-lg btn-success btn-block" type="submit" value="SignUp">
+                <input class="btn btn-lg btn-success btn-block" type="submit" value="SignUp" :disabled="protectedUI">
               </fieldset>
             </form>
           </div>
@@ -44,6 +44,7 @@ import { mapGetters } from 'vuex';
 export default {
   name: 'SignUp',
   data: () => ({
+    protectedUI: false,
     username: '',
     email: '',
     name: '',
@@ -52,13 +53,14 @@ export default {
   }),
   methods: {
     handleSubmit() {
+      this.protectedUI = true;
       this.$store.dispatch('signUp', {
         username: this.username,
         email: this.email,
         name: this.name,
         phone_number: this.phone_number,
         password: this.password,
-      });
+      }).catch(() => { this.protectedUI = false; });
     },
   },
   computed: {
