@@ -1,22 +1,37 @@
 import test from 'tape';
-import Vuex from 'vuex';
+// import Vuex from 'vuex';
+
+import store from '../../src/store';
 
 import * as types from '../../lib/mutation-types';
-import CognitoAuth from '../../lib';
 
-const fakeCognitoConfig = {
-  Region: 'us-east-1',
-  UserPoolId: 'us-east-1_xxxxxxxxx',
-  ClientId: 'xxxxxxxxxxxxxxxxxxxxxxxxx',
-  IdentityPoolId: 'us-east-1:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx',
-};
+test('cognito mutations', (t) => {
+  t.plan(2);
 
-const store = new Vuex.Store({
-  modules: {
-    cognito: new CognitoAuth(cognitoConfig),
-  },
-});
+  t.test('SIGNUP', (tt) => {
+    const user = {
+      username: 'test',
+      confirmed: false,
+    };
 
-test('cognito mutations', t => {
-  
+    store.commit(types.SIGNUP, user);
+
+    tt.plan(1);
+
+    tt.equal(store.state.cognito.user, user);
+
+    tt.end();
+  });
+
+  t.test('SIGNUP_FAILURE', (tt) => {
+    const errorMessage = 'Incorrect username or password';
+
+    store.commit(types.SIGNUP_FAILURE, { errorMessage });
+
+    tt.plan(1);
+
+    tt.equal(store.state.cognito.failure, errorMessage);
+
+    tt.end();
+  });
 });

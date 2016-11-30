@@ -49,13 +49,15 @@ test('cognito signUp', t => {
     tt.ok(cSignUp.calledOnce, 'cognitoUserPool.signUp should be called exactly once');
     tt.ok(cSignUp.calledWith(userInfo.username, userInfo.password),
       'cognitoUserPool.signUp first two arguments should be username and password');
-      
+
     tt.ok(commitSpy.called, 'state.commit should be called');
     tt.ok(commitSpy.calledOnce, 'state.commit should be called exactly once');
-    tt.ok(commitSpy.withArgs(types.SIGNUP, {
-      username: userInfo.username,
-      confirmed: false,
-    }), `mutation '${types.SIGNUP}' should receive payload: {user, confirmed}`);
+    tt.ok(commitSpy.calledWithMatch(
+      sinon.match(types.SIGNUP),
+      sinon.match({
+        username: userInfo.username,
+        confirmed: false,
+      })), `mutation '${types.SIGNUP}' should receive payload: {username, confirmed}`);
 
     tt.end();
   });

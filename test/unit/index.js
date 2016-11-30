@@ -5,3 +5,4 @@ require("babel-register")({
 });
 
 require('./actions.test')
+require('./mutations.test')
