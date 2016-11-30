@@ -15,7 +15,7 @@
               <fieldset>
                 <div class="form-group">
                   <!-- Value at 'username' failed to satisfy constraint: Member must satisfy regular expression pattern: [\p{L}\p{M}\p{S}\p{N}\p{P}]+ -->
-                  <input class="form-control" placeholder="testusername" name="username" type="text" v-model="username" required min="1" pattern="\p{L}\p{M}\p{S}\p{N}\p{P}">
+                  <input class="form-control" placeholder="testusername" name="username" type="text" v-model="username" required min="1">
                 </div>
                 <div class="form-group">
                   <input class="form-control" placeholder="yourmail@example.com" name="email" type="email" v-model="email" required>
@@ -29,7 +29,7 @@
                 <div class="form-group">
                   <input class="form-control" placeholder="Password" name="password" type="password" v-model="password" required min="6" pattern="[\S]+">
                 </div>
-                <input class="btn btn-lg btn-success btn-block" type="submit" value="SignUp" :disabled="protectedUI">
+                <input class="btn btn-lg btn-success btn-block" type="submit" value="SignUp" :disabled="protectedUI || !formIsValid">
               </fieldset>
             </form>
           </div>
@@ -68,6 +68,17 @@ export default {
     ...mapGetters([
       'failure',
     ]),
+    formIsValid() {
+      return /[\S]+/.test(this.username)
+      && this.email.indexOf('@') > 1
+      && this.name.length > 0
+      && /[+-\S]+/.test(this.phone_number)
+      && /[a-z]+/.test(this.password)
+      && /[A-Z]+/.test(this.password)
+      && /[0-9]+/.test(this.password)
+      && /[!@#$%^&*()_+={}[\]\\;:.,|]+/.test(this.password)
+      && this.password.length >= 6;
+    },
   },
 };
 </script>
