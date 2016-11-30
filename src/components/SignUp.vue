@@ -14,19 +14,20 @@
             <form accept-charset="UTF-8" role="form" @submit.stop.prevent="handleSubmit">
               <fieldset>
                 <div class="form-group">
-                  <input class="form-control" placeholder="testusername" name="username" type="text" :value="username">
+                  <!-- Value at 'username' failed to satisfy constraint: Member must satisfy regular expression pattern: [\p{L}\p{M}\p{S}\p{N}\p{P}]+ -->
+                  <input class="form-control" placeholder="testusername" name="username" type="text" v-model="username" required min="1" pattern="\p{L}\p{M}\p{S}\p{N}\p{P}">
                 </div>
                 <div class="form-group">
-                  <input class="form-control" placeholder="yourmail@example.com" name="email" type="text" :value="email">
+                  <input class="form-control" placeholder="yourmail@example.com" name="email" type="email" v-model="email" required>
                 </div>
                 <div class="form-group">
-                  <input class="form-control" placeholder="John Doe" name="name" type="text" :value="name">
+                  <input class="form-control" placeholder="John Doe" name="name" type="text" v-model="name">
                 </div>
                 <div class="form-group">
-                  <input class="form-control" placeholder="+155512345" name="phone_number" type="text" :value="phone_number">
+                  <input class="form-control" placeholder="+155512345" name="phone_number" type="text" v-model="phone_number" required>
                 </div>
                 <div class="form-group">
-                  <input class="form-control" placeholder="Password" name="password" type="password" :value="password" >
+                  <input class="form-control" placeholder="Password" name="password" type="password" v-model="password" required min="6" pattern="[\S]+">
                 </div>
                 <input class="btn btn-lg btn-success btn-block" type="submit" value="SignUp" :disabled="protectedUI">
               </fieldset>
@@ -72,42 +73,12 @@ export default {
 </script>
 
 <style>
-.white{
-    color:#000;
-    background-color:#fff;
+input:invalid {
+  border-color: red;
 }
-
-.btn-facebook {
-    color: #ffffff;
-    -webkit-text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
-    text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
-    background-color: #2b4b90;
-    *background-color: #133783;
-    background-image: -moz-linear-gradient(top, #3b5998, #133783);
-    background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#3b5998), to(#133783));
-    background-image: -webkit-linear-gradient(top, #3b5998, #133783);
-    background-image: -o-linear-gradient(top, #3b5998, #133783);
-    background-image: linear-gradient(to bottom, #3b5998, #133783);
-    background-repeat: repeat-x;
-    border-color: #133783 #133783 #091b40;
-    border-color: rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.25);
-    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ff3b5998', endColorstr='#ff133783', GradientType=0);
-    filter: progid:DXImageTransform.Microsoft.gradient(enabled=false);
+input[type=text]:valid,
+input[type=email]:valid,
+input[type=password]:valid {
+  border-color: green;
 }
-
-    .btn-facebook:hover,
-    .btn-facebook:focus,
-    .btn-facebook:active,
-    .btn-facebook.active,
-    .btn-facebook.disabled,
-    .btn-facebook[disabled] {
-        color: #ffffff;
-        background-color: #133783 !important;
-        *background-color: #102e6d !important;
-    }
-
-    .btn-facebook:active,
-    .btn-facebook.active {
-        background-color: #0d2456 \9 !important;
-    }
 </style>
