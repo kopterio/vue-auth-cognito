@@ -66,12 +66,12 @@ test('cognito signUp', (t) => {
     const errorMessage = 'Incorrect username or password';
 
     // set CognitoUserPool.signUp to call the callback with an error!
-    cSignUp.withArgs('gooduser', 'wrongpassword').yields([{
+    cSignUp.withArgs('gooduser', 'wrongpassword').yields({
       code: 'NotAuthorizedException',
       message: errorMessage,
       name: 'NotAuthorizedException',
       retryDelay: 59.43,
-    }, null]);
+    }, null);
 
     // call the signUp action as if it is called by vuex
     actions.signUp({ commit: commitSpy }, Object.assign(
@@ -81,8 +81,10 @@ test('cognito signUp', (t) => {
     tt.plan(3);
     tt.ok(commitSpy.called, 'state.commit should be called');
     tt.ok(commitSpy.calledOnce, 'state.commit should be called exactly once');
-    tt.ok(commitSpy.withArgs(types.SIGNUP_FAILURE, { errorMessage }),
-      `mutation '${types.SIGNUP_FAILURE}' should receive payload: { error_message }`);
+    tt.ok(commitSpy.calledWithMatch(
+      sinon.match(types.SIGNUP_FAILURE),
+      sinon.match.hasOwn('errorMessage', errorMessage)
+    ), `mutation '${types.SIGNUP_FAILURE}' should receive payload: { errorMessage: '...' }`);
 
     tt.end();
   });
