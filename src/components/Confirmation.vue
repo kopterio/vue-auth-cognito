@@ -10,15 +10,10 @@
           <form accept-charset="UTF-8" role="form">
             <fieldset>
               <div class="form-group">
-                <input class="form-control" placeholder="yourmail@example.com" name="email" type="text" v-model="username">
+                <input class="form-control" placeholder="batman" name="username" type="text" :value="username">
               </div>
               <div class="form-group">
-                <input class="form-control" placeholder="Password" name="password" type="password" v-model="password">
-              </div>
-              <div class="checkbox">
-                <label>
-                  <input name="remember" type="checkbox" value="Remember Me"> Remember Me
-                </label>
+                <input class="form-control" placeholder="123456" name="code" type="text" :value="code" min="6" max="6">
               </div>
               <input class="btn btn-lg btn-success btn-block" type="submit" value="Login">
             </fieldset>
@@ -32,11 +27,30 @@
 
 <script>
 export default {
-  name: 'Login',
+  name: 'Confirmation',
   data: () => ({
     username: '',
-    password: '',
+    code: '',
   }),
+  methods: {
+    handleSubmit() {
+      this.protectedUI = true;
+      this.$store.dispatch('signUp', {
+        username: this.username,
+        email: this.email,
+        name: this.name,
+        phone_number: this.phone_number,
+        password: this.password,
+      }).catch(() => { this.protectedUI = false; });
+    },
+  },
+  computed: {
+    formIsValid() {
+      return /[\S]+/.test(this.username)
+      && this.email.indexOf('@') > 1
+      && this.code.length === 6;
+    },
+  },
 };
 </script>
 

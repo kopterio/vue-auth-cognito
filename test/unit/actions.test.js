@@ -20,7 +20,7 @@ const userInfo = {
   phone_number: '+15553334444',
 };
 
-test('cognito signUp', t => {
+test('cognito signUp', (t) => {
   const FakeCognitoUserPool = sinon.stub();
   const cSignUp = FakeCognitoUserPool.prototype.signUp = sinon.stub();
 
@@ -92,4 +92,47 @@ test('cognito signUp', t => {
   });
 
   t.end();
+});
+
+test('cognito confirmRegistration', (t) => {
+  // sinon.log = msg => t.comment(msg);
+  const FakeCognitoUser = sinon.stub();
+  const cConfirm = FakeCognitoUser.prototype.confirmRegistration = sinon.stub();
+  FakeCognitoUser.prototype.makeUnauthenticatedRequest = sinon.stub();
+  // const FakeCognitoUserNamespace = { default() {} };
+  // const CognitoUserContructor = sinon.stub(FakeCognitoUserNamespace, 'default');
+
+
+  // CognitoUserContructor.returns(FakeCognitoUser);
+
+  const FakeCognitoUserPool = sinon.stub();
+
+  const actions = proxyquire('../../lib/actions', {
+    'amazon-cognito-identity-js/src/CognitoUserPool': {
+      default: FakeCognitoUserPool,
+    },
+    'amazon-cognito-identity-js/src/CognitoUser': FakeCognitoUser,
+  }).default(fakeCognitoConfig); // call the default exported function with config
+
+  // console.log()
+
+  const payload = {
+    username: 'test',
+    code: '123456',
+  };
+
+  const commitSpy = sinon.spy();
+
+  cConfirm.withArgs(payload.code).yields(null, 'SUCCESS');
+
+  actions.confirmRegistration({ commit: commitSpy }, payload);
+
+  t.plan(1);
+
+  t.ok(FakeCognitoUser.called);
+
+  t.end();
+
+  // t.plan(3);
+  // t.assert('signUp' in actions, 'exported actions contain a signUp method');
 });
