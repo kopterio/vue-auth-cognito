@@ -2,8 +2,6 @@ import test from 'tape';
 import proxyquire from 'proxyquire';
 import * as sinon from 'sinon';
 
-import store from '../../src/store';
-
 import * as types from '../../lib/mutation-types';
 
 const fakeCognitoConfig = {
@@ -22,20 +20,22 @@ const userInfo = {
   phone_number: '+15553334444',
 };
 
-test('cognito signUp', (t) => {
-  const FakeCognitoUserPool = sinon.stub();
-  const cSignUp = FakeCognitoUserPool.prototype.signUp = sinon.stub();
+const FakeCognitoUser = sinon.stub();
+const FakeCognitoUserPool = sinon.stub();
+const FakeAuthenticationDetails = sinon.stub();
+const actions = proxyquire('../../lib/actions', {
+  'amazon-cognito-identity-js/src/CognitoUserPool': { default: FakeCognitoUserPool },
+  'amazon-cognito-identity-js/src/CognitoUser': { default: FakeCognitoUser },
+  'amazon-cognito-identity-js/src/AuthenticationDetails': { default: FakeAuthenticationDetails },
+}).default(fakeCognitoConfig); // call the default exported function with config
+const commitSpy = sinon.spy();
 
-  const actions = proxyquire('../../lib/actions', {
-    'amazon-cognito-identity-js/src/CognitoUserPool': { default: FakeCognitoUserPool },
-  }).default(fakeCognitoConfig); // call the default exported function with config
+test('cognito signUp', (t) => {
+  const cSignUp = FakeCognitoUserPool.prototype.signUp = sinon.stub();
 
   t.plan(3);
   t.assert('signUp' in actions, 'exported actions contain a signUp method');
-
   t.test('successful signup', (tt) => {
-    const commitSpy = sinon.spy();
-
     // set CognitoUserPool.signUp to call the callback with err:null,data:stuff
     cSignUp.withArgs(userInfo.username, userInfo.password).yields(null, {
       user: { username: userInfo.username },
@@ -46,27 +46,22 @@ test('cognito signUp', (t) => {
     const promise = actions.signUp({ commit: commitSpy }, userInfo);
 
     tt.plan(7);
-
-    tt.ok(promise instanceof Promise);
+    tt.ok(promise instanceof Promise, 'signUp action should return a promise');
     tt.ok(cSignUp.called, 'cognitoUserPool.signUp should be called');
     tt.ok(cSignUp.calledOnce, 'cognitoUserPool.signUp should be called exactly once');
     tt.ok(cSignUp.calledWith(userInfo.username, userInfo.password),
       'cognitoUserPool.signUp first two arguments should be username and password');
-
     tt.ok(commitSpy.called, 'state.commit should be called');
     tt.ok(commitSpy.calledOnce, 'state.commit should be called exactly once');
-    tt.ok(commitSpy.calledWithMatch(
-      sinon.match(types.SIGNUP),
-      sinon.match({
-        username: userInfo.username,
-        confirmed: false,
-      })), `mutation '${types.SIGNUP}' should receive payload: {username, confirmed}`);
-
+    tt.ok(commitSpy.calledWithMatch(sinon.match(types.SIGNUP), sinon.match({
+      username: userInfo.username,
+      confirmed: false,
+    })), `mutation '${types.SIGNUP}' should receive payload: {username, confirmed}`);
     tt.end();
   });
 
   t.test('failed signup', (tt) => {
-    const commitSpy = sinon.spy();
+    commitSpy.reset();
 
     const errorMessage = 'Incorrect username or password';
 
@@ -90,7 +85,6 @@ test('cognito signUp', (t) => {
       sinon.match(types.SIGNUP_FAILURE),
       sinon.match.hasOwn('errorMessage', errorMessage)
     ), `mutation '${types.SIGNUP_FAILURE}' should receive payload: { errorMessage: '...' }`);
-
     tt.end();
   });
 
@@ -98,28 +92,7 @@ test('cognito signUp', (t) => {
 });
 
 test('cognito confirmRegistration', (t) => {
-  // sinon.log = msg => t.comment(msg);
-  const FakeCognitoUser = sinon.stub();
   const cConfirm = FakeCognitoUser.prototype.confirmRegistration = sinon.stub();
-  // FakeCognitoUser.prototype.makeUnauthenticatedRequest = sinon.stub();
-  // const FakeCognitoUserNamespace = { default() {} };
-  // const CognitoUserContructor = sinon.stub(FakeCognitoUserNamespace, 'default');
-
-
-  // CognitoUserContructor.returns(FakeCognitoUser);
-
-  const FakeCognitoUserPool = sinon.stub();
-
-  const actions = proxyquire('../../lib/actions', {
-    'amazon-cognito-identity-js/src/CognitoUserPool': {
-      default: FakeCognitoUserPool,
-    },
-    'amazon-cognito-identity-js/src/CognitoUser': {
-      default: FakeCognitoUser,
-    },
-  }).default(fakeCognitoConfig); // call the default exported function with config
-
-  // console.log()
 
   const payload = {
     username: 'test',
@@ -128,27 +101,19 @@ test('cognito confirmRegistration', (t) => {
 
   const errorMessage = 'Wrong confirmation code';
 
-  // const commitSpy = sinon.spy();
-
   const promise = actions.confirmRegistration({ }, payload);
 
   t.plan(6);
 
-  t.ok(promise instanceof Promise);
+  t.ok(promise instanceof Promise, 'confirmRegistration returns a Promise');
   t.ok(FakeCognitoUser.called, 'CognitoUser constructor should be called');
   t.ok(FakeCognitoUser.calledOnce, 'CognitoUser constructor should be called once');
-  t.ok(FakeCognitoUser.calledWithMatch(
-    sinon.match({
-      Pool: sinon.match.instanceOf(FakeCognitoUserPool),
-      Username: payload.username,
-    })
-  ), 'CognitoUser constructor first argument should have `Pool` property');
-  // t.ok(FakeCognitoUser.calledWithMatch(
-  //   sinon.match.hasOwn('Username', payload.username)
-  // ), 'CognitoUser constructor first argument should have `Username` property');
+  t.ok(FakeCognitoUser.calledWithMatch(sinon.match({
+    Pool: sinon.match.instanceOf(FakeCognitoUserPool),
+    Username: payload.username,
+  })), 'CognitoUser constructor first argument is { Pool, Username }');
 
-  t.test('success', (tt) => {
-    const commitSpy = sinon.spy();
+  t.test('successful confirmRegistration', (tt) => {
     cConfirm.reset();
 
     cConfirm.withArgs(payload.code).yields(null, 'SUCCESS');
@@ -156,24 +121,20 @@ test('cognito confirmRegistration', (t) => {
     actions.confirmRegistration({ commit: commitSpy }, payload);
 
     tt.plan(5);
-
-    tt.ok(cConfirm.called);
-    tt.ok(cConfirm.calledOnce);
+    tt.ok(cConfirm.called, 'confirmRegistration should be called');
+    tt.ok(cConfirm.calledOnce, 'confirmRegistration should be called once');
     tt.ok(cConfirm.calledWithMatch(
       sinon.match(payload.code)
-    ));
-
-    tt.ok(commitSpy.called);
-
+    ), 'confirmRegistration should be called with the `code` argument');
+    tt.ok(commitSpy.called, 'mutation should be called');
     tt.ok(commitSpy.calledWithMatch(
       sinon.match(types.CONFIRMED)
-    ));
-
+    ), `mutation of type ${types.CONFIRMED} should be called`);
     tt.end();
   });
 
   t.test('failure', (tt) => {
-    const commitSpy = sinon.spy();
+    commitSpy.reset();
 
     cConfirm.withArgs(`${payload.code}1`).yields({
       code: 'NotAuthorizedException',
@@ -185,14 +146,10 @@ test('cognito confirmRegistration', (t) => {
     actions.confirmRegistration({ commit: commitSpy }, Object.assign(payload, { code: `${payload.code}1` }));
 
     tt.plan(1);
-
     tt.ok(commitSpy.calledWithMatch(
       sinon.match(types.CONFIRMED_FAILURE),
       sinon.match.hasOwn('errorMessage', errorMessage)
     ), `mutation '${types.CONFIRMED_FAILURE}' should receive payload: { errorMessage: '...' }`);
-
-    tt.comment(commitSpy.args);
-
     tt.end();
   });
 
@@ -200,27 +157,8 @@ test('cognito confirmRegistration', (t) => {
 });
 
 test('cognito authenticate', (t) => {
-  // Fake User
-  const FakeCognitoUser = sinon.stub();
+  FakeCognitoUser.reset()
   FakeCognitoUser.prototype.authenticateUser = sinon.stub();
-
-  // Fake Pool
-  const FakeCognitoUserPool = sinon.stub();
-
-  // Fake AuthenticationDetails
-  const FakeAuthenticationDetails = sinon.stub();
-
-  const actions = proxyquire('../../lib/actions', {
-    'amazon-cognito-identity-js/src/CognitoUserPool': {
-      default: FakeCognitoUserPool,
-    },
-    'amazon-cognito-identity-js/src/AuthenticationDetails': {
-      default: FakeAuthenticationDetails,
-    },
-    'amazon-cognito-identity-js/src/CognitoUser': {
-      default: FakeCognitoUser,
-    },
-  }).default(fakeCognitoConfig); // call the default exported function with config
 
   const payload = {
     username: 'test',
@@ -233,31 +171,25 @@ test('cognito authenticate', (t) => {
 
   t.plan(8);
 
-  t.ok(promise instanceof Promise);
+  t.ok(promise instanceof Promise, 'actions.authenticateUser should return a Promise');
   // AuthenticationDetails test
   t.ok(FakeAuthenticationDetails.called, 'AuthenticationDetails constructor should be called');
   t.ok(FakeAuthenticationDetails.calledOnce, 'AuthenticationDetails constructor should be called once');
-  t.ok(FakeAuthenticationDetails.calledWithMatch(
-    sinon.match({
-      Username: payload.username,
-      Password: payload.password,
-    })
-  ), "AuthenticationDetails constructor's first argument should have { Username, Password } properties");
+  t.ok(FakeAuthenticationDetails.calledWithMatch(sinon.match({
+    Username: payload.username,
+    Password: payload.password,
+  })), "AuthenticationDetails constructor's first argument should have { Username, Password } properties");
 
   // User tests
   t.ok(FakeCognitoUser.called, 'CognitoUser constructor should be called');
   t.ok(FakeCognitoUser.calledOnce, 'CognitoUser constructor should be called once');
-  t.ok(FakeCognitoUser.calledWithMatch(
-    sinon.match({
-      Username: payload.username,
-    })
-  ), 'CognitoUser constructor first argument should have `Pool` property');
-  // t.ok(FakeCognitoUser.calledWithMatch(
-  //   sinon.match.hasOwn('Username', payload.username)
-  // ), 'CognitoUser constructor first argument should have `Username` property');
+  t.ok(FakeCognitoUser.calledWithMatch(sinon.match({
+    Pool: sinon.match.instanceOf(FakeCognitoUserPool),
+    Username: payload.username,
+  })), 'CognitoUser constructor should receive { Pool, Username }');
 
   t.test('onFailure', (tt) => {
-    const commitSpy = sinon.spy();
+    commitSpy.reset()
     const cAuth = FakeCognitoUser.prototype.authenticateUser =
     sinon.spy((authDetails, callbacks) => {
       callbacks.onFailure({
@@ -267,7 +199,7 @@ test('cognito authenticate', (t) => {
     });
 
     actions.authenticateUser({ commit: commitSpy }, payload);
-    // TODO: check for Promise
+    // TODO: check for Promise.reject was called
     // .catch(() => {
     //   tt.ok(true);
     // });
@@ -281,7 +213,6 @@ test('cognito authenticate', (t) => {
     ), "cognitoUser.authenticateUser's first argument should be AuthenticationDetails");
 
     tt.ok(commitSpy.called, 'commit should be called');
-
     tt.ok(commitSpy.calledWithMatch(
       sinon.match(types.AUTHENTICATE_FAILURE)
     ), `mutation ${types.AUTHENTICATE_FAILURE} should receive { errorMessage: ... } payload`);
