@@ -1,7 +1,8 @@
 <template>
   <div id="app">
     <SignUp></SignUp>
-    <Confirmation></Confirmation>
+    <UserConfirmation></UserConfirmation>
+    <PasswordConfirmation></PasswordConfirmation>
     <Login></Login>
   </div>
 </template>
@@ -9,14 +10,16 @@
 <script>
 import Login from './components/Login';
 import SignUp from './components/SignUp';
-import Confirmation from './components/Confirmation';
+import UserConfirmation from './components/UserConfirmation';
+import PasswordConfirmation from './components/PasswordConfirmation';
 
 export default {
   name: 'app',
   components: {
     Login,
     SignUp,
-    Confirmation,
+    UserConfirmation,
+    PasswordConfirmation,
   },
 };
 </script>

@@ -9,10 +9,9 @@
           <div class="alert alert-success" v-show="successMessage">
             {{ successMessage }}
           </div>
-          <div class="alert alert-danger" v-show="failure">
-            {{ failure }}
+          <div class="alert alert-danger" v-show="errorMessage">
+            {{ errorMessage }}
           </div>
-
           <div class="panel-body">
             <form accept-charset="UTF-8" role="form" @submit.stop.prevent="handleSubmit">
               <fieldset>
@@ -43,11 +42,10 @@
 </template>
 
 <script>
-import { mapGetters } from 'vuex';
-
 export default {
   name: 'SignUp',
   data: () => ({
+    errorMessage: null,
     successMessage: null,
     disableAllInputs: false,
     protectedUI: false,
@@ -69,13 +67,13 @@ export default {
       }).then(() => {
         this.disableAllInputs = true;
         this.successMessage = 'Successfuly signed up';
-      }).catch(() => { this.protectedUI = false; });
+      }).catch((errorMessage) => {
+        this.errorMessage = errorMessage;
+        this.protectedUI = false;
+      });
     },
   },
   computed: {
-    ...mapGetters([
-      'failure',
-    ]),
     formIsValid() {
       return /[\S]+/.test(this.username)
       && this.email.indexOf('@') > 1

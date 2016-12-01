@@ -4,13 +4,13 @@
     <div class="col-md-4 col-md-offset-4">
       <div class="panel panel-default">
         <div class="panel-heading">
-          <h3 class="panel-title">Confirmation</h3>
+          <h3 class="panel-title">User confirmation</h3>
         </div>
         <div class="alert alert-success" v-show="successMessage">
           {{ successMessage }}
         </div>
-        <div class="alert alert-danger" v-show="failure">
-          {{ failure }}
+        <div class="alert alert-danger" v-show="errorMessage">
+          {{ errorMessage }}
         </div>
         <div class="panel-body">
           <form accept-charset="UTF-8" role="form" @submit.stop.prevent="handleSubmit">
@@ -32,11 +32,10 @@
 </template>
 
 <script>
-import { mapGetters } from 'vuex';
-
 export default {
   name: 'Confirmation',
   data: () => ({
+    errorMessage: null,
     successMessage: null,
     disableAllInputs: false,
     protectedUI: false,
@@ -52,16 +51,16 @@ export default {
       }).then(() => {
         this.disableAllInputs = true;
         this.successMessage = 'Successfuly confirmed';
-      }).catch(() => { this.protectedUI = false; });
+      }).catch((errorMessage) => {
+        this.errorMessage = errorMessage;
+        this.protectedUI = false;
+      });
     },
   },
   computed: {
-    ...mapGetters([
-      'failure',
-    ]),
     formIsValid() {
       return /[\S]+/.test(this.username)
-      && this.code.length === 6;
+      && this.code.length >= 6;
     },
   },
 };

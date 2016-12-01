@@ -102,12 +102,11 @@ test('cognito confirmRegistration', (t) => {
       message: errorMessage,
     }, null);
 
-    const failurePromise = actions.confirmRegistration({ commit: commitSpy }, Object.assign(payload, { code: `${payload.code}1` }));
-
     tt.plan(1);
-    failurePromise.catch((catchErrorMessage) => {
-      tt.equal(catchErrorMessage, errorMessage, 'confirmRegistration should reject with err.message');
-    });
+    actions.confirmRegistration({ commit: commitSpy }, Object.assign(payload, { code: `${payload.code}1` })).catch(
+      (err) => {
+        tt.deepEqual(err, { code: 'NotAuthorizedException', message: errorMessage }, 'confirmRegistration should reject with { code, message } object');
+      });
   });
 
   t.end();

@@ -9,8 +9,8 @@
         <div class="alert alert-success" v-show="successMessage">
           {{ successMessage }}
         </div>
-        <div class="alert alert-danger" v-show="failure">
-          {{ failure }}
+        <div class="alert alert-danger" v-show="errorMessage">
+          {{ errorMessage }}
         </div>
         <div class="panel-body">
           <form accept-charset="UTF-8" role="form" @submit.stop.prevent="handleSubmit">
@@ -40,12 +40,10 @@
 </template>
 
 <script>
-// import { mapGetters } from 'vuex';
-
 export default {
   name: 'Login',
   data: () => ({
-    failure: null,
+    errorMessage: null,
     successMessage: null,
     disableAllInputs: false,
     protectedUI: false,
@@ -61,11 +59,10 @@ export default {
       }).then(() => {
         this.disableAllInputs = true;
         this.password = '';
-        this.failure = null;
+        this.errorMessage = null;
         this.successMessage = 'Successfuly signed in';
       }).catch((errorMessage) => {
-        console.log(errorMessage);
-        this.failure = errorMessage;
+        this.errorMessage = errorMessage;
         this.protectedUI = false;
       });
     },
