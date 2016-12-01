@@ -40,11 +40,12 @@
 </template>
 
 <script>
-import { mapGetters } from 'vuex';
+// import { mapGetters } from 'vuex';
 
 export default {
   name: 'Login',
   data: () => ({
+    failure: null,
     successMessage: null,
     disableAllInputs: false,
     protectedUI: false,
@@ -60,21 +61,26 @@ export default {
       }).then(() => {
         this.disableAllInputs = true;
         this.password = '';
+        this.failure = null;
         this.successMessage = 'Successfuly signed in';
-      }).catch(() => { this.protectedUI = false; });
+      }).catch((errorMessage) => {
+        console.log(errorMessage);
+        this.failure = errorMessage;
+        this.protectedUI = false;
+      });
     },
   },
   computed: {
-    ...mapGetters([
-      'failure',
-    ]),
+    // ...mapGetters([
+    //   'failure',
+    // ]),
     formIsValid() {
-      return /[\S]+/.test(this.username)
-      && /[a-z]+/.test(this.password)
-      && /[A-Z]+/.test(this.password)
-      && /[0-9]+/.test(this.password)
-      && /[!@#$%^&*()_+={}[\]\\;:.,|]+/.test(this.password)
-      && this.password.length >= 6;
+      return /[\S]+/.test(this.username);
+      // && /[a-z]+/.test(this.password)
+      // && /[A-Z]+/.test(this.password)
+      // && /[0-9]+/.test(this.password)
+      // && /[!@#$%^&*()_+={}[\]\\;:.,|]+/.test(this.password)
+      // && this.password.length >= 6;
     },
   },
 };
