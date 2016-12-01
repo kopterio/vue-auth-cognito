@@ -138,9 +138,7 @@ test('cognito confirmRegistration', (t) => {
 
     cConfirm.withArgs(`${payload.code}1`).yields({
       code: 'NotAuthorizedException',
-      message: errorMessage,
-      name: 'NotAuthorizedException',
-      retryDelay: 59.43,
+      message: errorMessage
     }, null);
 
     actions.confirmRegistration({ commit: commitSpy }, Object.assign(payload, { code: `${payload.code}1` }));
@@ -157,7 +155,7 @@ test('cognito confirmRegistration', (t) => {
 });
 
 test('cognito authenticate', (t) => {
-  FakeCognitoUser.reset()
+  FakeCognitoUser.reset();
   FakeCognitoUser.prototype.authenticateUser = sinon.stub();
 
   const payload = {
@@ -189,7 +187,7 @@ test('cognito authenticate', (t) => {
   })), 'CognitoUser constructor should receive { Pool, Username }');
 
   t.test('onFailure', (tt) => {
-    commitSpy.reset()
+    commitSpy.reset();
     const cAuth = FakeCognitoUser.prototype.authenticateUser =
     sinon.spy((authDetails, callbacks) => {
       callbacks.onFailure({
@@ -279,6 +277,89 @@ test('cognito authenticate', (t) => {
       })
     ), `mutation ${types.AUTHENTICATE} should receive payload with details`);
 
+    tt.end();
+  });
+
+  t.end();
+});
+
+test('cognito confirmPassword', (t) => {
+  commitSpy.reset();
+  FakeCognitoUser.reset();
+
+  FakeCognitoUser.prototype.confirmPassword =
+  sinon.spy((confirmationCode, newPassword, callbacks) => {
+    callbacks.onSuccess();
+  });
+
+  const payload = {
+    username: 'test',
+    code: '123456',
+    newPassword: 'Qwerty123!',
+  };
+
+  const errorMessage = 'Wrong confirmation code';
+
+  const promise = actions.confirmPassword({ }, payload);
+
+  t.plan(6);
+
+  t.ok(promise instanceof Promise, 'confirmRegistration returns a Promise');
+  t.ok(FakeCognitoUser.called, 'CognitoUser constructor should be called');
+  t.ok(FakeCognitoUser.calledOnce, 'CognitoUser constructor should be called once');
+  t.ok(FakeCognitoUser.calledWithMatch(sinon.match({
+    Pool: sinon.match.instanceOf(FakeCognitoUserPool),
+    Username: payload.username,
+  })), 'CognitoUser constructor first argument is { Pool, Username }');
+
+  t.test('onSuccess', (tt) => {
+    commitSpy.reset();
+
+    const cConfirm = FakeCognitoUser.prototype.confirmPassword =
+    sinon.spy((confirmationCode, newPassword, callbacks) => {
+      callbacks.onSuccess();
+    });
+
+    actions.confirmPassword({ commit: commitSpy }, payload);
+
+    tt.plan(5);
+    tt.ok(cConfirm.called, 'confirmPassword should be called');
+    tt.ok(cConfirm.calledOnce, 'confirmPassword should be called once');
+    tt.ok(cConfirm.calledWithMatch(
+      sinon.match(payload.code)
+    ), 'confirmPassword should be called with the `code` argument');
+    tt.ok(commitSpy.called, 'mutation should be called');
+    tt.ok(commitSpy.calledWithMatch(
+      sinon.match(types.PASSWORD_CONFIRMED)
+    ), `mutation of type ${types.PASSWORD_CONFIRMED} should be called`);
+    tt.end();
+  });
+
+  t.test('onFailure', (tt) => {
+    commitSpy.reset();
+    // cConfirm.reset();
+
+    const cConfirm = FakeCognitoUser.prototype.confirmPassword =
+    sinon.spy((confirmationCode, newPassword, callbacks) => {
+      callbacks.onFailure({
+        code: 'NotAuthorizedException',
+        message: errorMessage,
+      });
+    });
+
+    actions.confirmPassword({ commit: commitSpy }, payload);
+
+    tt.plan(5);
+    tt.ok(cConfirm.called, 'confirmPassword should be called');
+    tt.ok(cConfirm.calledOnce, 'confirmPassword should be called once');
+    tt.ok(cConfirm.calledWithMatch(
+      sinon.match(payload.code)
+    ), 'confirmPassword should be called with the `code` argument');
+    tt.ok(commitSpy.called, 'mutation should be called');
+    tt.ok(commitSpy.calledWithMatch(
+      sinon.match(types.PASSWORD_CONFIRMED_FAILURE),
+      sinon.match.hasOwn('errorMessage', errorMessage),
+    ), `mutation of type ${types.PASSWORD_CONFIRMED_FAILURE} should be called`);
     tt.end();
   });
 

@@ -59,6 +59,7 @@ export default {
         password: this.password,
       }).then(() => {
         this.disableAllInputs = true;
+        this.password = '';
         this.successMessage = 'Successfuly signed in';
       }).catch(() => { this.protectedUI = false; });
     },
