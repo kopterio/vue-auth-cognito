@@ -259,13 +259,23 @@ test('cognito authenticate', (t) => {
     tt.ok(commitSpy.called, 'commit should be called');
     tt.ok(commitSpy.calledWithMatch(
       sinon.match(types.AUTHENTICATE), sinon.match({
-        username: payload.username,
-        userConfirmationNecessary,
-        idTokenJwt: 'fake id token jwt token',
-        idTokenExpiration: 'fake id token expiration',
-        accessTokenJwt: 'fake access token jwt token',
-        accessTokenExpiration: 'fake access token expiration',
-        refreshToken: 'fake refresh token value',
+        user: {
+          username: payload.username,
+          confirmed: !userConfirmationNecessary,
+        },
+        tokens: {
+          id: {
+            jwt: 'fake id token jwt token',
+            expiration: 'fake id token expiration',
+          },
+          access: {
+            jwt: 'fake access token jwt token',
+            expiration: 'fake access token expiration',
+          },
+          refresh: {
+            jwt: 'fake refresh token value',
+          },
+        },
       })
     ), `mutation ${types.AUTHENTICATE} should receive payload with details`);
 
