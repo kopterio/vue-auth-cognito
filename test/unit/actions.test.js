@@ -132,17 +132,20 @@ test('cognito confirmRegistration', (t) => {
 
   const promise = actions.confirmRegistration({ }, payload);
 
-  t.plan(7);
+  t.plan(6);
 
   t.ok(promise instanceof Promise);
   t.ok(FakeCognitoUser.called, 'CognitoUser constructor should be called');
   t.ok(FakeCognitoUser.calledOnce, 'CognitoUser constructor should be called once');
   t.ok(FakeCognitoUser.calledWithMatch(
-    sinon.match.hasOwn('Pool')
+    sinon.match({
+      Pool: sinon.match.instanceOf(FakeCognitoUserPool),
+      Username: payload.username,
+    })
   ), 'CognitoUser constructor first argument should have `Pool` property');
-  t.ok(FakeCognitoUser.calledWithMatch(
-    sinon.match.hasOwn('Username', payload.username)
-  ), 'CognitoUser constructor first argument should have `Username` property');
+  // t.ok(FakeCognitoUser.calledWithMatch(
+  //   sinon.match.hasOwn('Username', payload.username)
+  // ), 'CognitoUser constructor first argument should have `Username` property');
 
   t.test('success', (tt) => {
     const commitSpy = sinon.spy();
@@ -189,6 +192,99 @@ test('cognito confirmRegistration', (t) => {
     ), `mutation '${types.CONFIRMED_FAILURE}' should receive payload: { errorMessage: '...' }`);
 
     tt.comment(commitSpy.args);
+
+    tt.end();
+  });
+
+  t.end();
+});
+
+test('cognito authenticate', (t) => {
+  // Fake User
+  const FakeCognitoUser = sinon.stub();
+  FakeCognitoUser.prototype.authenticateUser = sinon.stub();
+
+  // Fake Pool
+  const FakeCognitoUserPool = sinon.stub();
+
+  // Fake AuthenticationDetails
+  const FakeAuthenticationDetails = sinon.stub();
+
+  const actions = proxyquire('../../lib/actions', {
+    'amazon-cognito-identity-js/src/CognitoUserPool': {
+      default: FakeCognitoUserPool,
+    },
+    'amazon-cognito-identity-js/src/AuthenticationDetails': {
+      default: FakeAuthenticationDetails,
+    },
+    'amazon-cognito-identity-js/src/CognitoUser': {
+      default: FakeCognitoUser,
+    },
+  }).default(fakeCognitoConfig); // call the default exported function with config
+
+  const payload = {
+    username: 'test',
+    password: 'Qwerty123!',
+  };
+
+  const errorMessage = 'Wrong username or password';
+
+  const promise = actions.authenticateUser({ }, payload);
+
+  t.plan(8);
+
+  t.ok(promise instanceof Promise);
+  // AuthenticationDetails test
+  t.ok(FakeAuthenticationDetails.called, 'AuthenticationDetails constructor should be called');
+  t.ok(FakeAuthenticationDetails.calledOnce, 'AuthenticationDetails constructor should be called once');
+  t.ok(FakeAuthenticationDetails.calledWithMatch(
+    sinon.match({
+      Username: payload.username,
+      Password: payload.password,
+    })
+  ), "AuthenticationDetails constructor's first argument should have { Username, Password } properties");
+
+  // User tests
+  t.ok(FakeCognitoUser.called, 'CognitoUser constructor should be called');
+  t.ok(FakeCognitoUser.calledOnce, 'CognitoUser constructor should be called once');
+  t.ok(FakeCognitoUser.calledWithMatch(
+    sinon.match({
+      Username: payload.username,
+    })
+  ), 'CognitoUser constructor first argument should have `Pool` property');
+  // t.ok(FakeCognitoUser.calledWithMatch(
+  //   sinon.match.hasOwn('Username', payload.username)
+  // ), 'CognitoUser constructor first argument should have `Username` property');
+
+  t.test('onFailure', (tt) => {
+    const commitSpy = sinon.spy();
+    const cAuth = FakeCognitoUser.prototype.authenticateUser =
+    sinon.spy((authDetails, callbacks) => {
+      callbacks.onFailure({
+        code: 'NotAuthorizedException',
+        message: errorMessage,
+      });
+    });
+
+    actions.authenticateUser({ commit: commitSpy }, payload);
+    // TODO: check for Promise
+    // .catch(() => {
+    //   tt.ok(true);
+    // });
+
+    tt.plan(5);
+
+    tt.ok(cAuth.called, 'cognitoUser.authenticateUser should be called');
+    tt.ok(cAuth.calledOnce, 'cognitoUser.authenticateUser should be called once');
+    tt.ok(cAuth.calledWithMatch(
+      sinon.match.instanceOf(FakeAuthenticationDetails)
+    ), "cognitoUser.authenticateUser's first argument should be AuthenticationDetails");
+
+    tt.ok(commitSpy.called, 'commit should be called');
+
+    tt.ok(commitSpy.calledWithMatch(
+      sinon.match(types.AUTHENTICATE_FAILURE)
+    ), `mutation ${types.AUTHENTICATE_FAILURE} should receive { errorMessage: ... } payload`);
 
     tt.end();
   });
