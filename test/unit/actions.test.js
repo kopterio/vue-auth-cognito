@@ -169,7 +169,7 @@ test('cognito authenticate', (t) => {
 
   const promise = actions.authenticateUser({ }, payload);
 
-  t.plan(8);
+  t.plan(9);
 
   t.ok(promise instanceof Promise, 'actions.authenticateUser should return a Promise');
   // AuthenticationDetails test
@@ -216,6 +216,58 @@ test('cognito authenticate', (t) => {
     tt.ok(commitSpy.calledWithMatch(
       sinon.match(types.AUTHENTICATE_FAILURE)
     ), `mutation ${types.AUTHENTICATE_FAILURE} should receive { errorMessage: ... } payload`);
+
+    tt.end();
+  });
+
+  t.test('onSuccess', (tt) => {
+    commitSpy.reset();
+
+    const session = {
+      getIdToken: () => ({
+        getJwtToken: () => 'fake id token jwt token',
+        getExpiration: () => 'fake id token expiration',
+      }),
+      getRefreshToken: () => ({
+        getToken: () => 'fake refresh token value',
+      }),
+      getAccessToken: () => ({
+        getJwtToken: () => 'fake access token jwt token',
+        getExpiration: () => 'fake access token expiration',
+      }),
+    };
+    const userConfirmationNecessary = true;
+
+    const cAuth = FakeCognitoUser.prototype.authenticateUser =
+      sinon.spy((authDetails, callbacks) => {
+        callbacks.onSuccess(session, userConfirmationNecessary);
+      });
+
+    actions.authenticateUser({ commit: commitSpy }, payload);
+    // TODO: check for Promise.resolve was called
+
+    tt.plan(5);
+
+    // test: payload.idTokenJwt == IdToken().JwtToken()
+    // test: payload.idTokenExpiration == IdToken().Expiration()
+    tt.ok(cAuth.called, 'cognitoUser.authenticateUser should be called');
+    tt.ok(cAuth.calledOnce, 'cognitoUser.authenticateUser should be called once');
+    tt.ok(cAuth.calledWithMatch(
+      sinon.match.instanceOf(FakeAuthenticationDetails)
+    ), "cognitoUser.authenticateUser's first argument should be AuthenticationDetails");
+
+    tt.ok(commitSpy.called, 'commit should be called');
+    tt.ok(commitSpy.calledWithMatch(
+      sinon.match(types.AUTHENTICATE), sinon.match({
+        username: payload.username,
+        userConfirmationNecessary,
+        idTokenJwt: 'fake id token jwt token',
+        idTokenExpiration: 'fake id token expiration',
+        accessTokenJwt: 'fake access token jwt token',
+        accessTokenExpiration: 'fake access token expiration',
+        refreshToken: 'fake refresh token value',
+      })
+    ), `mutation ${types.AUTHENTICATE} should receive payload with details`);
 
     tt.end();
   });
