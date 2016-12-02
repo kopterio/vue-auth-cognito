@@ -33,18 +33,23 @@ const commitSpy = sinon.spy();
 test('cognito successful signUp', (tt) => {
   const cSignUp = FakeCognitoUserPool.prototype.signUp = sinon.stub();
 
-  tt.plan(8);
-
-  tt.ok('signUp' in actions, 'exported actions contain a signUp method');
-    // set CognitoUserPool.signUp to call the callback with err:null,data:stuff
+  // set CognitoUserPool.signUp to call the callback with err:null,data:stuff
   cSignUp.withArgs(userInfo.username, userInfo.password).yields(null, {
     user: { username: userInfo.username },
     userConfirmed: false,
   });
 
-  // call the signUp action as if it is called by vuex
-  const promise = actions.signUp({ commit: commitSpy }, userInfo);
+  tt.plan(9);
 
+  // call the signUp action as if it is called by vuex
+  const promise = actions.signUp({ commit: commitSpy }, userInfo).then(
+    () => {
+      tt.pass('signup returned promise.resolve() was called');
+      tt.end();
+    }
+  );
+
+  tt.ok('signUp' in actions, 'exported actions contain a signUp method');
   tt.ok(promise instanceof Promise, 'signUp action should return a promise');
   tt.ok(cSignUp.called, 'cognitoUserPool.signUp should be called');
   tt.ok(cSignUp.calledOnce, 'cognitoUserPool.signUp should be called exactly once');
@@ -56,7 +61,7 @@ test('cognito successful signUp', (tt) => {
     username: userInfo.username,
     confirmed: false,
   })), `mutation '${types.SIGNUP}' should receive payload: {username, confirmed}`);
-  tt.end();
+  // tt.end();
 });
 
 test('cognito confirmRegistration', (t) => {
