@@ -45,7 +45,12 @@ test('cognito successful signUp', (t) => {
     });
 
     // call the signUp action as if it is called by vuex
-    const promise = actions.signUp({ commit: commitSpy }, userInfo);
+    const promise = actions.signUp({ commit: commitSpy }, userInfo).then(
+      () => {
+        tt.pass('signup returned promise.resolve() was called');
+        tt.end();
+      }
+    );
 
     tt.plan(7);
     tt.ok(promise instanceof Promise, 'signUp action should return a promise');
