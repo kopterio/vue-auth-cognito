@@ -9,7 +9,8 @@
     "build": "node build/build.js",
     "unit": "tape-watch test/unit/index.js -p tap-spec",
     "test": "npm run unit",
-    "lint": "eslint --ext .js,.vue src test/unit/specs"
+    "lint": "eslint --ext .js,.vue src test/unit/specs",
+    "coverage": "tap --cov --coverage-report=html --strict test/unit/index.js"
   },
   "dependencies": {
     "amazon-cognito-identity-js": "^1.8.0",
@@ -66,6 +67,7 @@
     "shelljs": "^0.7.4",
     "sinon": "^1.17.3",
     "sinon-chai": "^2.8.0",
+    "tap": "^8.0.1",
     "tap-spec": "^4.1.1",
     "tape": "^4.6.3",
     "tape-watch": "^2.2.4",

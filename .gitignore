@@ -5,3 +5,5 @@ npm-debug.log
 test/unit/coverage
 .vscode/
 config/cognito.js
+.nyc_output/
+coverage/
