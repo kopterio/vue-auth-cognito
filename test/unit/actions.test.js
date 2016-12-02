@@ -30,33 +30,59 @@ const actions = proxyquire('../../lib/actions', {
 }).default(fakeCognitoConfig); // call the default exported function with config
 const commitSpy = sinon.spy();
 
-test('cognito successful signUp', (tt) => {
+test('cognito successful signUp', (t) => {
   const cSignUp = FakeCognitoUserPool.prototype.signUp = sinon.stub();
 
-  tt.plan(8);
+  t.plan(3);
 
-  tt.ok('signUp' in actions, 'exported actions contain a signUp method');
+  t.ok('signUp' in actions, 'exported actions contain a signUp method');
+
+  t.test('onSuccess', (tt) => {
     // set CognitoUserPool.signUp to call the callback with err:null,data:stuff
-  cSignUp.withArgs(userInfo.username, userInfo.password).yields(null, {
-    user: { username: userInfo.username },
-    userConfirmed: false,
+    cSignUp.withArgs(userInfo.username, userInfo.password).yields(null, {
+      user: { username: userInfo.username },
+      userConfirmed: false,
+    });
+
+    // call the signUp action as if it is called by vuex
+    const promise = actions.signUp({ commit: commitSpy }, userInfo);
+
+    tt.plan(7);
+    tt.ok(promise instanceof Promise, 'signUp action should return a promise');
+    tt.ok(cSignUp.called, 'cognitoUserPool.signUp should be called');
+    tt.ok(cSignUp.calledOnce, 'cognitoUserPool.signUp should be called exactly once');
+    tt.ok(cSignUp.calledWith(userInfo.username, userInfo.password),
+      'cognitoUserPool.signUp first two arguments should be username and password');
+    tt.ok(commitSpy.called, 'state.commit should be called');
+    tt.ok(commitSpy.calledOnce, 'state.commit should be called exactly once');
+    tt.ok(commitSpy.calledWithMatch(sinon.match(types.SIGNUP), sinon.match({
+      username: userInfo.username,
+      confirmed: false,
+    })), `mutation '${types.SIGNUP}' should receive payload: {username, confirmed}`);
+
+    tt.end();
   });
 
-  // call the signUp action as if it is called by vuex
-  const promise = actions.signUp({ commit: commitSpy }, userInfo);
+  t.test('onFailure', (tt) => {
+    cSignUp.reset();
 
-  tt.ok(promise instanceof Promise, 'signUp action should return a promise');
-  tt.ok(cSignUp.called, 'cognitoUserPool.signUp should be called');
-  tt.ok(cSignUp.calledOnce, 'cognitoUserPool.signUp should be called exactly once');
-  tt.ok(cSignUp.calledWith(userInfo.username, userInfo.password),
-    'cognitoUserPool.signUp first two arguments should be username and password');
-  tt.ok(commitSpy.called, 'state.commit should be called');
-  tt.ok(commitSpy.calledOnce, 'state.commit should be called exactly once');
-  tt.ok(commitSpy.calledWithMatch(sinon.match(types.SIGNUP), sinon.match({
-    username: userInfo.username,
-    confirmed: false,
-  })), `mutation '${types.SIGNUP}' should receive payload: {username, confirmed}`);
-  tt.end();
+    const errorMessage = 'Something went wrong here';
+
+    const fullError = {
+      code: 'NotAuthorizedException',
+      message: errorMessage,
+    };
+
+    cSignUp.withArgs(userInfo.username, userInfo.password).yields(fullError, null);
+
+    tt.plan(1);
+
+    actions.signUp({ commit: commitSpy }, userInfo).catch(
+      (err) => {
+        tt.deepEqual(err, fullError, 'signUp should reject with { code, message }');
+      }
+    );
+  });
 });
 
 test('cognito confirmRegistration', (t) => {
@@ -71,7 +97,9 @@ test('cognito confirmRegistration', (t) => {
 
   const promise = actions.confirmRegistration({ }, payload);
 
-  t.plan(6);
+  t.plan(7);
+
+  t.ok('confirmRegistration' in actions, 'exported actions contain a confirmRegistration method');
 
   t.ok(promise instanceof Promise, 'confirmRegistration returns a Promise');
   t.ok(FakeCognitoUser.called, 'CognitoUser constructor should be called');
@@ -97,15 +125,17 @@ test('cognito confirmRegistration', (t) => {
   });
 
   t.test('failure', (tt) => {
-    cConfirm.withArgs(`${payload.code}1`).yields({
+    const fullError = {
       code: 'NotAuthorizedException',
       message: errorMessage,
-    }, null);
+    };
+
+    cConfirm.withArgs(`${payload.code}1`).yields(fullError, null);
 
     tt.plan(1);
     actions.confirmRegistration({ commit: commitSpy }, Object.assign(payload, { code: `${payload.code}1` })).catch(
       (err) => {
-        tt.deepEqual(err, { code: 'NotAuthorizedException', message: errorMessage }, 'confirmRegistration should reject with { code, message } object');
+        tt.deepEqual(err, fullError, 'confirmRegistration should reject with { code, message } object');
       });
   });
 
@@ -125,7 +155,9 @@ test('cognito authenticateUser', (t) => {
 
   const promise = actions.authenticateUser({ }, payload);
 
-  t.plan(9);
+  t.plan(10);
+
+  t.ok('authenticateUser' in actions, 'exported actions contain a authenticateUser method');
 
   t.ok(promise instanceof Promise, 'actions.authenticateUser should return a Promise');
   // AuthenticationDetails test
@@ -145,19 +177,21 @@ test('cognito authenticateUser', (t) => {
   })), 'CognitoUser constructor should receive { Pool, Username }');
 
   t.test('onFailure', (tt) => {
+    const fullError = {
+      code: 'NotAuthorizedException',
+      message: errorMessage,
+    };
+
     FakeCognitoUser.prototype.authenticateUser =
     sinon.spy((authDetails, callbacks) => {
-      callbacks.onFailure({
-        code: 'NotAuthorizedException',
-        message: errorMessage,
-      });
+      callbacks.onFailure(fullError);
     });
 
     tt.plan(1);
 
     actions.authenticateUser({ commit: commitSpy }, payload).catch(
-      (catchErrorMessage) => {
-        tt.equal(catchErrorMessage, errorMessage, 'authenticateUser should reject with err.message');
+      (err) => {
+        tt.deepEqual(err, fullError, 'authenticateUser should reject with { code, message }');
       }
     );
   });
@@ -246,7 +280,9 @@ test('cognito confirmPassword', (t) => {
 
   const promise = actions.confirmPassword({ }, payload);
 
-  t.plan(6);
+  t.plan(7);
+
+  t.ok('confirmPassword' in actions, 'exported actions contain a confirmPassword method');
 
   t.ok(promise instanceof Promise, 'confirmRegistration returns a Promise');
   t.ok(FakeCognitoUser.called, 'CognitoUser constructor should be called');
@@ -275,18 +311,20 @@ test('cognito confirmPassword', (t) => {
   });
 
   t.test('onFailure', (tt) => {
+    const fullError = {
+      code: 'NotAuthorizedException',
+      message: errorMessage,
+    };
+
     FakeCognitoUser.prototype.confirmPassword =
     sinon.spy((confirmationCode, newPassword, callbacks) => {
-      callbacks.onFailure({
-        code: 'NotAuthorizedException',
-        message: errorMessage,
-      });
+      callbacks.onFailure(fullError);
     });
 
     tt.plan(1);
     actions.confirmPassword({ commit: commitSpy }, payload).catch(
-      (catchErrorMessage) => {
-        tt.equal(catchErrorMessage, errorMessage, 'confirmPassword should reject with err.message');
+      (err) => {
+        tt.deepEqual(err, fullError, 'confirmPassword should reject with { code, message }');
       }
     );
   });
