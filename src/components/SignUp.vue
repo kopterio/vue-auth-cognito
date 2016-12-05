@@ -57,6 +57,10 @@ export default {
   }),
   methods: {
     handleSubmit() {
+      // Remove alert boxes
+      this.successMessage = null;
+      this.errorMessage = null;
+
       this.protectedUI = true;
       this.$store.dispatch('signUp', {
         username: this.username,

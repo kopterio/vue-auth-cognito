@@ -56,7 +56,15 @@ export default {
   }),
   methods: {
     handleSubmit() {
+      // Remove alert boxes and resend confirmation parts first
+      this.errorMessage = null;
+      this.resendSuccessMessage = null;
+      this.resendErrorMessage = null;
+      this.showResendButton = false;
+
+      // Protect UI from being used
       this.protectedUI = true;
+
       this.$store.dispatch('confirmRegistration', {
         username: this.username,
         code: this.code,
@@ -72,6 +80,10 @@ export default {
       });
     },
     resendCode() {
+      // Remove alert boxes first
+      this.resendSuccessMessage = null;
+      this.resendErrorMessage = null;
+
       this.$store.dispatch('resendConfirmationCode', {
         username: this.username,
       }).then(() => {
