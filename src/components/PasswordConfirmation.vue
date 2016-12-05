@@ -57,9 +57,10 @@ export default {
       this.errorMessage = null;
 
       this.protectedUI = true;
-      this.$store.dispatch('confirmRegistration', {
+      this.$store.dispatch('confirmPassword', {
         username: this.username,
         code: this.code,
+        newPassword: this.newPassword,
       }).then(() => {
         this.disableAllInputs = true;
         this.successMessage = 'Successfuly confirmed';
