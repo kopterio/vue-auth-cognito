@@ -48,11 +48,11 @@ test('cognito successful signUp', (t) => {
     const promise = actions.signUp({ commit: commitSpy }, userInfo).then(
       () => {
         tt.pass('signup returned promise.resolve() was called');
-        tt.end();
       }
     );
 
-    tt.plan(7);
+    tt.plan(8);
+
     tt.ok(promise instanceof Promise, 'signUp action should return a promise');
     tt.ok(cSignUp.called, 'cognitoUserPool.signUp should be called');
     tt.ok(cSignUp.calledOnce, 'cognitoUserPool.signUp should be called exactly once');
@@ -64,8 +64,6 @@ test('cognito successful signUp', (t) => {
       username: userInfo.username,
       confirmed: false,
     })), `mutation '${types.SIGNUP}' should receive payload: {username, confirmed}`);
-
-    tt.end();
   });
 
   t.test('onFailure', (tt) => {
@@ -88,6 +86,8 @@ test('cognito successful signUp', (t) => {
       }
     );
   });
+
+  t.end();
 });
 
 test('cognito confirmRegistration', (t) => {
@@ -119,7 +119,11 @@ test('cognito confirmRegistration', (t) => {
 
     cConfirm.withArgs(payload.code).yields(null, 'SUCCESS');
 
-    actions.confirmRegistration({ commit: commitSpy }, payload);
+    actions.confirmRegistration({ commit: commitSpy }, payload).then(
+      () => {
+        tt.pass('confirmRegistration returned promise.resolve() was called');
+      }
+    );
 
     tt.plan(5);
     tt.ok(cConfirm.called, 'confirmRegistration should be called');
@@ -224,10 +228,13 @@ test('cognito authenticateUser', (t) => {
         callbacks.onSuccess(session, userConfirmationNecessary);
       });
 
-    actions.authenticateUser({ commit: commitSpy }, payload);
-    // TODO: check for Promise.resolve was called
+    actions.authenticateUser({ commit: commitSpy }, payload).then(
+      () => {
+        tt.pass('authenticateUser returned promise.resolve() was called');
+      }
+    );
 
-    tt.plan(5);
+    tt.plan(6);
 
     // test: payload.idTokenJwt == IdToken().JwtToken()
     // test: payload.idTokenExpiration == IdToken().Expiration()
@@ -259,8 +266,6 @@ test('cognito authenticateUser', (t) => {
         },
       })
     ), `mutation ${types.AUTHENTICATE} should receive payload with details`);
-
-    tt.end();
   });
 
   t.end();
@@ -305,9 +310,14 @@ test('cognito confirmPassword', (t) => {
       callbacks.onSuccess();
     });
 
-    actions.confirmPassword({ commit: commitSpy }, payload);
+    actions.confirmPassword({ commit: commitSpy }, payload).then(
+      () => {
+        tt.pass('confirmPassword returned promise.resolve() was called');
+      }
+    );
 
-    tt.plan(5);
+    tt.plan(6);
+
     tt.ok(cConfirm.called, 'confirmPassword should be called');
     tt.ok(cConfirm.calledOnce, 'confirmPassword should be called once');
     tt.ok(cConfirm.calledWithMatch(
@@ -330,6 +340,68 @@ test('cognito confirmPassword', (t) => {
     actions.confirmPassword({ commit: commitSpy }, payload).catch(
       (err) => {
         tt.deepEqual(err, fullError, 'confirmPassword should reject with { code, message }');
+      }
+    );
+  });
+
+  t.end();
+});
+
+test('cognito resendConfirmationCode', (t) => {
+  commitSpy.reset();
+  FakeCognitoUser.reset();
+
+  const cResend = FakeCognitoUser.prototype.resendConfirmationCode = sinon.stub();
+
+  const payload = {
+    username: 'test',
+  };
+
+  const errorMessage = 'Wrong confirmation code';
+
+  const promise = actions.resendConfirmationCode({ }, payload);
+  t.plan(7);
+
+  t.ok('resendConfirmationCode' in actions, 'exported actions contain a resendConfirmationCode method');
+
+  t.ok(promise instanceof Promise, 'resendConfirmationCode returns a Promise');
+  t.ok(FakeCognitoUser.called, 'CognitoUser constructor should be called');
+  t.ok(FakeCognitoUser.calledOnce, 'CognitoUser constructor should be called once');
+  t.ok(FakeCognitoUser.calledWithMatch(sinon.match({
+    Pool: sinon.match.instanceOf(FakeCognitoUserPool),
+    Username: payload.username,
+  })), 'CognitoUser constructor first argument is { Pool, Username }');
+
+  t.test('onSuccess', (tt) => {
+    commitSpy.reset();
+    cResend.reset();
+
+    cResend.yields(null);
+
+    actions.resendConfirmationCode({ commit: commitSpy }, payload).then(
+      () => {
+        tt.pass('resendConfirmationCode returned promise.resolve() was called');
+      }
+    );
+
+    tt.plan(5);
+
+    tt.ok(cResend.called, 'resendConfirmationCode should be called');
+    tt.ok(cResend.calledOnce, 'resendConfirmationCode should be called once');
+  });
+
+  t.test('onFailure', (tt) => {
+    const fullError = {
+      code: 'NotAuthorizedException',
+      message: errorMessage,
+    };
+
+    cResend.yields(fullError);
+
+    tt.plan(1);
+    actions.resendConfirmationCode({ commit: commitSpy }, payload).catch(
+      (err) => {
+        tt.deepEqual(err, fullError, 'resendConfirmationCode should reject with { code, message }');
       }
     );
   });
