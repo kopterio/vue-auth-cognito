@@ -4,7 +4,7 @@
       <div class="col-md-4 col-md-offset-4">
         <div class="panel panel-default">
           <div class="panel-heading">
-            <h3 class="panel-title">SignUp via site</h3>
+            <h3 class="panel-title">Sign Up</h3>
           </div>
           <div class="alert alert-success" v-show="successMessage">
             {{ successMessage }}
@@ -17,19 +17,22 @@
               <fieldset>
                 <div class="form-group">
                   <!-- Value at 'username' failed to satisfy constraint: Member must satisfy regular expression pattern: [\p{L}\p{M}\p{S}\p{N}\p{P}]+ -->
-                  <input class="form-control" placeholder="testusername" name="username" type="text" v-model="username" required min="1" :disabled="disableAllInputs">
+                  <input class="form-control" placeholder="testusername" type="text" v-model="username" required min="1" :disabled="disableAllInputs">
                 </div>
                 <div class="form-group">
-                  <input class="form-control" placeholder="yourmail@example.com" name="email" type="email" v-model="email" required :disabled="disableAllInputs">
+                  <input class="form-control" placeholder="yourmail@example.com" type="email" v-model="email" required :disabled="disableAllInputs">
                 </div>
                 <div class="form-group">
-                  <input class="form-control" placeholder="John Doe" name="name" type="text" v-model="name" :disabled="disableAllInputs">
+                  <input class="form-control" placeholder="John Doe" type="text" v-model="name" :disabled="disableAllInputs">
                 </div>
                 <div class="form-group">
-                  <input class="form-control" placeholder="+155512345" name="phone_number" type="text" v-model="phone_number" required :disabled="disableAllInputs">
+                  <input class="form-control" placeholder="+155512345" type="text" v-model="phone_number" required :disabled="disableAllInputs">
                 </div>
                 <div class="form-group">
-                  <input class="form-control" placeholder="Password" name="password" type="password" v-model="password" required min="6" pattern="[\S]+" :disabled="disableAllInputs">
+                  <input class="form-control" placeholder="Password" type="password" v-model="password" required min="6" pattern="[\S]+" :disabled="disableAllInputs">
+                </div>
+                <div class="form-group">
+                  <input class="form-control" placeholder="Password confirmation" type="password" v-model="passwordConfirmation" required min="6" pattern="[\S]+" :disabled="disableAllInputs">
                 </div>
                 <input class="btn btn-lg btn-success btn-block" type="submit" value="Sign Up" :disabled="protectedUI || !formIsValid || disableAllInputs">
               </fieldset>
@@ -54,6 +57,7 @@ export default {
     name: '',
     phone_number: '',
     password: '',
+    passwordConfirmation: '',
   }),
   methods: {
     handleSubmit() {
@@ -71,8 +75,8 @@ export default {
       }).then(() => {
         this.disableAllInputs = true;
         this.successMessage = 'Successfuly signed up';
-      }).catch((errorMessage) => {
-        this.errorMessage = errorMessage;
+      }).catch((err) => {
+        this.errorMessage = err.message;
         this.protectedUI = false;
       });
     },
@@ -87,7 +91,8 @@ export default {
       && /[A-Z]+/.test(this.password)
       && /[0-9]+/.test(this.password)
       && /[!@#$%^&*()_+={}[\]\\;:.,|]+/.test(this.password)
-      && this.password.length >= 6;
+      && this.password.length >= 6
+      && this.password === this.passwordConfirmation;
     },
   },
 };

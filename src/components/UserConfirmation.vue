@@ -74,6 +74,7 @@ export default {
       }).catch((err) => {
         this.errorMessage = err.message;
         this.protectedUI = false;
+        // TODO: should it be checked for `CodeMismatchException`?
         if (err.code === 'ExpiredCodeException') {
           this.showResendButton = true;
         }
