@@ -1,56 +1,42 @@
 import test from 'tape';
+import * as sinon from 'sinon';
+
+import CognitoUserPool from 'amazon-cognito-identity-js/src/CognitoUserPool';
+import CognitoUser from 'amazon-cognito-identity-js/src/CognitoUser';
 
 import store from '../../src/store';
 
 import * as types from '../../lib/mutation-types';
 
-test('SIGNUP mutation', (tt) => {
-  const user = {
-    username: 'test',
-    confirmed: false,
-  };
-  store.commit(types.SIGNUP, user);
-  tt.plan(1);
-  tt.equal(store.state.cognito.user, user);
-  tt.end();
+const fakeCognitoConfig = {
+  Region: 'us-east-1',
+  UserPoolId: 'us-east-1_xxxxxxxxx',
+  ClientId: 'xxxxxxxxxxxxxxxxxxxxxxxxx',
+  IdentityPoolId: 'us-east-1:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx',
+};
+
+const cognitoUserPool = new CognitoUserPool({
+  UserPoolId: fakeCognitoConfig.UserPoolId,
+  ClientId: fakeCognitoConfig.ClientId,
+  Paranoia: 6,
 });
 
-test('CONFIRMED mutation', (tt) => {
-  store.commit(types.CONFIRMED);
-  tt.plan(1);
-  tt.equal(store.state.cognito.user.confirmed, true);
-  tt.end();
+const cognitoUser = new CognitoUser({
+  Pool: cognitoUserPool,
+  Username: 'test',
 });
 
-test('AUTHENTICATE mutation', (tt) => {
-  const fiveHoursExpiration = new Date().getTime() + (5 * 60 * 60 * 1000);
-  const payload = {
-    user: {
-      confirmed: true,
-      username: 'johndoe',
-    },
-    tokens: {
-      id: {
-        jwt: 'jvMg5r2h+9Q+MXrI1RZ5qvqq',
-        expiration: fiveHoursExpiration,
-      },
-      access: {
-        jwt: 'jvMg5r2h+9Q+MXrI1RZ5qvqq',
-        expiration: fiveHoursExpiration,
-      },
-      refresh: { jwt: 'qFZBZrMcePSAWeMS9dFKE9i7' },
-    },
-  };
+test('AUTHENTICATE mutation', (t) => {
+  store.commit(types.AUTHENTICATE, cognitoUser);
+  t.plan(2);
+  t.equal(store.state.cognito.user, cognitoUser);
+  t.ok(store.state.cognito.user instanceof CognitoUser);
+  t.end();
+});
 
-  // before testing it works, reset it to a "faulty" state.
-  store.commit(types.AUTHENTICATE, payload);
-  tt.plan(7);
-  tt.equal(store.state.cognito.user.username, payload.user.username, 'should store username');
-  tt.equal(store.state.cognito.user.confirmed, payload.user.confirmed, 'should store confirmed status');
-  tt.equal(store.state.cognito.tokens.id.jwt, 'jvMg5r2h+9Q+MXrI1RZ5qvqq', 'should store proper jwt token');
-  tt.equal(store.state.cognito.tokens.id.expiration, fiveHoursExpiration, 'should store id token expiration');
-  tt.equal(store.state.cognito.tokens.access.jwt, 'jvMg5r2h+9Q+MXrI1RZ5qvqq', 'should store access token jwt');
-  tt.equal(store.state.cognito.tokens.access.expiration, fiveHoursExpiration, 'should store access token expiration');
-  tt.equal(store.state.cognito.tokens.refresh.jwt, 'qFZBZrMcePSAWeMS9dFKE9i7', 'should store refresh token jwt');
-  tt.end();
+test('SIGNOUT mutation', (t) => {
+  store.commit(types.SIGNOUT);
+  t.plan(1);
+  t.equal(store.state.cognito.user, null);
+  t.end();
 });
