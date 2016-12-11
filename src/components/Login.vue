@@ -72,16 +72,8 @@ export default {
     },
   },
   computed: {
-    // ...mapGetters([
-    //   'failure',
-    // ]),
     formIsValid() {
       return /[\S]+/.test(this.username);
-      // && /[a-z]+/.test(this.password)
-      // && /[A-Z]+/.test(this.password)
-      // && /[0-9]+/.test(this.password)
-      // && /[!@#$%^&*()_+={}[\]\\;:.,|]+/.test(this.password)
-      // && this.password.length >= 6;
     },
   },
 };

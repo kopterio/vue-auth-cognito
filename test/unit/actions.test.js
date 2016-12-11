@@ -32,6 +32,9 @@ const actions = proxyquire('../../lib/actions', {
 }).default(fakeCognitoConfig); // call the default exported function with config
 const commitSpy = sinon.spy();
 
+FakeCognitoUser.prototype.signInUserSession = sinon.stub();
+FakeCognitoUser.prototype.signInUserSession.isValid = sinon.stub().returns(true);
+
 test('cognito signUp', (t) => {
   const cSignUp = FakeCognitoUserPool.prototype.signUp = sinon.stub();
 
@@ -400,7 +403,7 @@ test('cognito changePassword', (t) => {
 
   const promise = actions.changePassword({ state }, payload);
 
-  t.plan(4);
+  t.plan(5);
 
   t.ok('changePassword' in actions, 'exported actions contain a changePassword method');
   t.ok(promise instanceof Promise, 'changePassword returns a Promise');
@@ -442,6 +445,24 @@ test('cognito changePassword', (t) => {
     );
   });
 
+  t.test('reject', (tt) => {
+    cChange.reset();
+
+    state.user = null;
+
+    const error = {
+      message: 'User is unauthenticated',
+    };
+
+    actions.signOut({ state }).catch(
+      (err) => {
+        tt.deepEqual(err, error, 'changePassword should reject if the user is unauthenticated');
+      }
+    );
+
+    tt.plan(1);
+  });
+
   t.end();
 });
 
@@ -466,7 +487,7 @@ test('cognito updateAttributes', (t) => {
 
   const promise = actions.updateAttributes({ state }, payload);
 
-  t.plan(4);
+  t.plan(5);
 
   t.ok('updateAttributes' in actions, 'exported actions contain a updateAttributes method');
 
@@ -509,6 +530,24 @@ test('cognito updateAttributes', (t) => {
     );
   });
 
+  t.test('reject', (tt) => {
+    cUpdate.reset();
+
+    state.user = null;
+
+    const error = {
+      message: 'User is unauthenticated',
+    };
+
+    actions.signOut({ state }).catch(
+      (err) => {
+        tt.deepEqual(err, error, 'updateAttributes should reject if the user is unauthenticated');
+      }
+    );
+
+    tt.plan(1);
+  });
+
   t.end();
 });
 
@@ -517,6 +556,8 @@ test('cognito signOut', (t) => {
   FakeCognitoUser.reset();
 
   const cSignOut = FakeCognitoUser.prototype.signOut = sinon.stub();
+  FakeCognitoUser.prototype.signInUserSession = sinon.stub();
+  FakeCognitoUser.prototype.signInUserSession.isValid = sinon.stub();
 
   // const errorMessage = 'Something went wrong';
 
@@ -528,7 +569,7 @@ test('cognito signOut', (t) => {
 
   const promise = actions.signOut({ state });
 
-  t.plan(3);
+  t.plan(4);
 
   t.ok('signOut' in actions, 'exported actions contain a signOut method');
   t.ok(promise instanceof Promise, 'signOut returns a Promise');
@@ -551,6 +592,23 @@ test('cognito signOut', (t) => {
     tt.ok(commitSpy.calledWithMatch(
       sinon.match(types.SIGNOUT)
     ), `mutation ${types.SIGNOUT} should be commited`);
+  });
+
+  t.test('reject', (tt) => {
+    cSignOut.reset();
+
+    state.user = null;
+
+    const error = {
+      message: 'User is unauthenticated',
+    };
+
+    tt.plan(1);
+    actions.signOut({ state }).catch(
+      (err) => {
+        tt.deepEqual(err, error, 'signOut should reject if the user is unauthenticated');
+      }
+    );
   });
 
   t.end();
