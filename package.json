@@ -4,13 +4,16 @@
   "description": "A Vue.js project",
   "author": "Anton Sekatski <antonsekatski@gmail.com>",
   "private": true,
+  "main": "dist/index.js",
   "scripts": {
     "dev": "node build/dev-server.js",
     "build": "node build/build.js",
     "unit": "tape-watch test/unit/index.js -p tap-spec",
     "test": "npm run unit",
     "lint": "eslint --ext .js,.vue src test/unit/specs",
-    "coverage": "tap --cov --coverage-report=html --strict test/unit/index.js"
+    "coverage": "tap --cov --coverage-report=html --strict test/unit/index.js",
+    "compile": "babel -d dist/ lib/",
+    "prepublish": "npm run compile"
   },
   "dependencies": {
     "amazon-cognito-identity-js": "^1.8.0",

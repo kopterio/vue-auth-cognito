@@ -64,8 +64,8 @@ export default {
       }).then(() => {
         this.disableAllInputs = true;
         this.successMessage = 'Successfuly confirmed';
-      }).catch((errorMessage) => {
-        this.errorMessage = errorMessage;
+      }).catch((err) => {
+        this.errorMessage = err.message;
         this.protectedUI = false;
       });
     },

@@ -65,8 +65,8 @@ export default {
         this.password = '';
         this.errorMessage = null;
         this.successMessage = 'Successfuly signed in';
-      }).catch((errorMessage) => {
-        this.errorMessage = errorMessage;
+      }).catch((err) => {
+        this.errorMessage = err.message;
         this.protectedUI = false;
       });
     },
