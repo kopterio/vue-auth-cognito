@@ -25,10 +25,11 @@ const FakeCognitoUserPool = sinon.stub();
 const FakeAuthenticationDetails = sinon.stub();
 const FakeUserAttribute = sinon.stub();
 const actions = proxyquire('../../lib/actions', {
-  'amazon-cognito-identity-js/src/CognitoUserPool': { default: FakeCognitoUserPool },
-  'amazon-cognito-identity-js/src/CognitoUser': { default: FakeCognitoUser },
-  'amazon-cognito-identity-js/src/AuthenticationDetails': { default: FakeAuthenticationDetails },
-  'amazon-cognito-identity-js/src/CognitoUserAttribute': { default: FakeUserAttribute },
+  'amazon-cognito-identity-js': {
+    CognitoUserPool: FakeCognitoUserPool,
+    CognitoUser: FakeCognitoUser,
+    AuthenticationDetails: FakeAuthenticationDetails,
+    CognitoUserAttribute: FakeUserAttribute },
 }).default(fakeCognitoConfig); // call the default exported function with config
 const commitSpy = sinon.spy();
 

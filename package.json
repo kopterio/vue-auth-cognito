@@ -12,8 +12,8 @@
     "test": "npm run unit",
     "lint": "eslint --ext .js,.vue src test/unit/specs",
     "coverage": "tap --cov --coverage-report=html --strict test/unit/index.js",
-    "compile": "babel -d dist/ lib/",
-    "prepublish": "npm run compile"
+    "compile": "mkdir -p dist && babel -d dist/ lib/",
+    "preinstall": "npm run compile"
   },
   "dependencies": {
     "amazon-cognito-identity-js": "^1.8.0",
