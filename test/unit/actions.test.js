@@ -11,15 +11,6 @@ const fakeCognitoConfig = {
   IdentityPoolId: 'us-east-1:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx',
 };
 
-// fixture for user details
-const userInfo = {
-  username: 'test',
-  password: 'Qwerty123!',
-  email: 'test@test.com',
-  name: 'MegaTest',
-  phone_number: '+15553334444',
-};
-
 const FakeCognitoUser = sinon.stub();
 const FakeCognitoUserPool = sinon.stub();
 const FakeAuthenticationDetails = sinon.stub();
@@ -35,6 +26,17 @@ const commitSpy = sinon.spy();
 
 FakeCognitoUser.prototype.signInUserSession = sinon.stub();
 FakeCognitoUser.prototype.signInUserSession.isValid = sinon.stub().returns(true);
+
+// fixture for user details
+const userInfo = {
+  username: 'test',
+  password: 'Qwerty123!',
+  attributes: [
+    new FakeUserAttribute({ Name: 'email', Value: 'test@email' }),
+    new FakeUserAttribute({ Name: 'name', Value: 'Richard' }),
+    new FakeUserAttribute({ Name: 'phone_number', Value: '+1555234567' }),
+  ],
+};
 
 test('cognito signUp', (t) => {
   const cSignUp = FakeCognitoUserPool.prototype.signUp = sinon.stub();
@@ -65,12 +67,12 @@ test('cognito signUp', (t) => {
 
     tt.ok(cSignUp.called, 'cognitoUserPool.signUp should be called');
     tt.ok(cSignUp.calledOnce, 'cognitoUserPool.signUp should be called exactly once');
-    tt.ok(cSignUp.calledWith(userInfo.username, userInfo.password),
+    tt.ok(cSignUp.calledWith(userInfo.username, userInfo.password, userInfo.attributes),
       'cognitoUserPool.signUp first two arguments should be username and password');
     tt.ok(commitSpy.called, 'state.commit should be called');
     tt.ok(commitSpy.calledOnce, 'state.commit should be called exactly once');
     // tt.ok(commitSpy.calledWithMatch(
-    //   sinon.match(types.AUTHENTICATE), sinon.match.instanceOf(FakeCognitoUser)
+      // sinon.match(types.AUTHENTICATE), sinon.match.instanceOf(FakeCognitoUser)
     // ), `mutation ${types.AUTHENTICATE} should receive CognitoUser payload`);
   });
 
