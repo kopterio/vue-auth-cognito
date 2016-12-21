@@ -38,7 +38,7 @@ const userInfo = {
   ],
 };
 
-test('cognito signUp', (t) => {
+test('cognito signUp', { timeout: 500 }, (t) => {
   const cSignUp = FakeCognitoUserPool.prototype.signUp = sinon.stub();
 
   const promise = actions.signUp({ }, userInfo);
@@ -63,7 +63,7 @@ test('cognito signUp', (t) => {
       }
     );
 
-    tt.plan(7);
+    tt.plan(6);
 
     tt.ok(cSignUp.called, 'cognitoUserPool.signUp should be called');
     tt.ok(cSignUp.calledOnce, 'cognitoUserPool.signUp should be called exactly once');
@@ -96,11 +96,9 @@ test('cognito signUp', (t) => {
       }
     );
   });
-
-  t.end();
 });
 
-test('cognito confirmRegistration', (t) => {
+test('cognito confirmRegistration', { timeout: 500 }, (t) => {
   FakeCognitoUser.reset();
 
   const cConfirm = FakeCognitoUser.prototype.confirmRegistration = sinon.stub();
@@ -137,7 +135,7 @@ test('cognito confirmRegistration', (t) => {
       }
     );
 
-    tt.plan(5);
+    tt.plan(4);
     tt.ok(cConfirm.called, 'confirmRegistration should be called');
     tt.ok(cConfirm.calledOnce, 'confirmRegistration should be called once');
     tt.ok(cConfirm.calledWithMatch(
@@ -159,11 +157,9 @@ test('cognito confirmRegistration', (t) => {
         tt.deepEqual(err, fullError, 'confirmRegistration should reject with { code, message } object');
       });
   });
-
-  t.end();
 });
 
-test('cognito authenticateUser', (t) => {
+test('cognito authenticateUser', { timeout: 500 }, (t) => {
   FakeCognitoUser.reset();
   FakeCognitoUser.prototype.authenticateUser = sinon.stub();
 
@@ -246,11 +242,9 @@ test('cognito authenticateUser', (t) => {
       sinon.match(types.AUTHENTICATE), sinon.match.instanceOf(FakeCognitoUser)
     ), `mutation ${types.AUTHENTICATE} should receive CognitoUser payload`);
   });
-
-  t.end();
 });
 
-test('cognito confirmPassword', (t) => {
+test('cognito confirmPassword', { timeout: 500 }, (t) => {
   commitSpy.reset();
   FakeCognitoUser.reset();
 
@@ -267,7 +261,7 @@ test('cognito confirmPassword', (t) => {
 
   const errorMessage = 'Wrong confirmation code';
 
-  const promise = actions.confirmPassword({ }, payload);
+  const promise = actions.confirmPassword({ commit: commitSpy }, payload);
 
   t.plan(7);
 
@@ -295,7 +289,7 @@ test('cognito confirmPassword', (t) => {
       }
     );
 
-    tt.plan(6);
+    tt.plan(4);
 
     tt.ok(cConfirm.called, 'confirmPassword should be called');
     tt.ok(cConfirm.calledOnce, 'confirmPassword should be called once');
@@ -305,6 +299,8 @@ test('cognito confirmPassword', (t) => {
   });
 
   t.test('onFailure', (tt) => {
+    commitSpy.reset();
+
     const fullError = {
       code: 'NotAuthorizedException',
       message: errorMessage,
@@ -322,11 +318,9 @@ test('cognito confirmPassword', (t) => {
       }
     );
   });
-
-  t.end();
 });
 
-test('cognito resendConfirmationCode', (t) => {
+test('cognito resendConfirmationCode', { timeout: 500 }, (t) => {
   commitSpy.reset();
   FakeCognitoUser.reset();
 
@@ -363,7 +357,7 @@ test('cognito resendConfirmationCode', (t) => {
       }
     );
 
-    tt.plan(5);
+    tt.plan(3);
 
     tt.ok(cResend.called, 'resendConfirmationCode should be called');
     tt.ok(cResend.calledOnce, 'resendConfirmationCode should be called once');
@@ -384,11 +378,9 @@ test('cognito resendConfirmationCode', (t) => {
       }
     );
   });
-
-  t.end();
 });
 
-test('cognito changePassword', (t) => {
+test('cognito changePassword', { timeout: 500 }, (t) => {
   FakeCognitoUser.reset();
 
   const cChange = FakeCognitoUser.prototype.changePassword = sinon.stub();
@@ -457,19 +449,17 @@ test('cognito changePassword', (t) => {
       message: 'User is unauthenticated',
     };
 
-    actions.signOut({ state }).catch(
+    tt.plan(1);
+
+    actions.changePassword({ state }).catch(
       (err) => {
         tt.deepEqual(err, error, 'changePassword should reject if the user is unauthenticated');
       }
     );
-
-    tt.plan(1);
   });
-
-  t.end();
 });
 
-test('cognito updateAttributes', (t) => {
+test('cognito updateAttributes', { timeout: 500 }, (t) => {
   FakeCognitoUser.reset();
 
   const cUpdate = FakeCognitoUser.prototype.updateAttributes = sinon.stub();
@@ -493,7 +483,6 @@ test('cognito updateAttributes', (t) => {
   t.plan(5);
 
   t.ok('updateAttributes' in actions, 'exported actions contain a updateAttributes method');
-
   t.ok(promise instanceof Promise, 'updateAttributes returns a Promise');
 
   t.test('success', (tt) => {
@@ -550,27 +539,19 @@ test('cognito updateAttributes', (t) => {
 
     tt.plan(1);
   });
-
-  t.end();
 });
 
-test('cognito signOut', (t) => {
+test('cognito signOut', { timeout: 500 }, (t) => {
   commitSpy.reset();
   FakeCognitoUser.reset();
 
   const cSignOut = FakeCognitoUser.prototype.signOut = sinon.stub();
-  FakeCognitoUser.prototype.signInUserSession = sinon.stub();
-  FakeCognitoUser.prototype.signInUserSession.isValid = sinon.stub();
-
-  // const errorMessage = 'Something went wrong';
 
   const state = {
     user: FakeCognitoUser.prototype,
   };
 
-  // cUpdate.withArgs(payload).yields(null);
-
-  const promise = actions.signOut({ state });
+  const promise = actions.signOut({ commit: commitSpy, state });
 
   t.plan(4);
 
@@ -578,6 +559,7 @@ test('cognito signOut', (t) => {
   t.ok(promise instanceof Promise, 'signOut returns a Promise');
 
   t.test('success', (tt) => {
+    commitSpy.reset();
     cSignOut.reset();
 
     actions.signOut({ commit: commitSpy, state }).then(
@@ -598,6 +580,7 @@ test('cognito signOut', (t) => {
   });
 
   t.test('reject', (tt) => {
+    commitSpy.reset();
     cSignOut.reset();
 
     state.user = null;
@@ -607,12 +590,10 @@ test('cognito signOut', (t) => {
     };
 
     tt.plan(1);
-    actions.signOut({ state }).catch(
+    actions.signOut({ commit: commitSpy, state }).catch(
       (err) => {
         tt.deepEqual(err, error, 'signOut should reject if the user is unauthenticated');
       }
     );
   });
-
-  t.end();
 });
