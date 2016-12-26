@@ -2,7 +2,7 @@
   "name": "vue-auth-cognito",
   "version": "1.0.0",
   "description": "Amazon Cognito for Vue/Vuex",
-  "main": "dist/index.js",
+  "main": "lib/index.js",
   "scripts": {
     "test": "tape-watch test/unit/index.js -p tap-spec",
     "compile": "babel -d lib/ src/",
