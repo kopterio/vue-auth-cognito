@@ -1,16 +1,35 @@
+import Vue from 'vue';
+import Vuex from 'vuex';
 import test from 'tape';
 import * as sinon from 'sinon';
 
-import store from '../../src/store';
+import * as types from '../../src/mutation-types';
 
-import * as types from '../../lib/mutation-types';
+import AuthCognito from '../../src';
 
-const cognitoUser = sinon.stub();
+import fakeCognitoConfig from './config';
+
+Vue.use(Vuex);
+const store = new Vuex.Store({
+  modules: {
+    cognito: new AuthCognito(fakeCognitoConfig),
+  }
+});
+
 
 test('AUTHENTICATE mutation', { timeout: 500 }, (t) => {
-  store.commit(types.AUTHENTICATE, cognitoUser);
+  const testUser = {
+    username: 'username',
+    tokens: {
+      IdToken: '',
+      RefreshToken: '',
+      AccessToken: '',
+    },
+  };
+
+  store.commit(types.AUTHENTICATE, testUser);
   t.plan(1);
-  t.equal(store.state.cognito.user, cognitoUser, 'state should keep a CognitoUser object');
+  t.deepEqual(store.state.cognito.user, testUser, 'state should keep user');
 });
 
 test('SIGNOUT mutation', { timeout: 500 }, (t) => {

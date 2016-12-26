@@ -2,30 +2,24 @@ import test from 'tape';
 import proxyquire from 'proxyquire';
 import * as sinon from 'sinon';
 
-import * as types from '../../lib/mutation-types';
+import * as types from '../../src/mutation-types';
 
-const fakeCognitoConfig = {
-  Region: 'us-east-1',
-  UserPoolId: 'us-east-1_xxxxxxxxx',
-  ClientId: 'xxxxxxxxxxxxxxxxxxxxxxxxx',
-  IdentityPoolId: 'us-east-1:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx',
-};
+import fakeCognitoConfig from './config';
 
 const FakeCognitoUser = sinon.stub();
 const FakeCognitoUserPool = sinon.stub();
 const FakeAuthenticationDetails = sinon.stub();
 const FakeUserAttribute = sinon.stub();
-const actions = proxyquire('../../lib/actions', {
+const FakeCognitoUserSession = sinon.stub();
+const actions = proxyquire('../../src/actions', {
   'amazon-cognito-identity-js': {
     CognitoUserPool: FakeCognitoUserPool,
     CognitoUser: FakeCognitoUser,
+    CognitoUserSession: FakeCognitoUserSession,
     AuthenticationDetails: FakeAuthenticationDetails,
     CognitoUserAttribute: FakeUserAttribute },
 }).default(fakeCognitoConfig); // call the default exported function with config
 const commitSpy = sinon.spy();
-
-FakeCognitoUser.prototype.signInUserSession = sinon.stub();
-FakeCognitoUser.prototype.signInUserSession.isValid = sinon.stub().returns(true);
 
 // fixture for user details
 const userInfo = {
@@ -37,6 +31,92 @@ const userInfo = {
     new FakeUserAttribute({ Name: 'phone_number', Value: '+1555234567' }),
   ],
 };
+
+test('getCurrentUser', { timeout: 500 }, (t) => {
+  const cGetCurrent = FakeCognitoUserPool.prototype.getCurrentUser = sinon.stub();
+  const cGetSession = FakeCognitoUser.prototype.getSession = sinon.stub();
+
+  t.plan(3);
+
+  t.test('reject when user is null', (tt) => {
+    cGetCurrent.reset();
+
+    cGetCurrent.returns(null);
+
+    const fullError = {
+      message: "Can't retrieve the current user",
+    };
+
+    tt.plan(3);
+
+    // call the signUp action as if it is called by vuex
+    const promise = actions.getCurrentUser({ commit: commitSpy }).catch(
+      (err) => {
+        tt.deepEqual(err, fullError, 'signUp should reject with { code, message }');
+      }
+    );
+    tt.ok('getCurrentUser' in actions, 'exported actions contain a getCurrentUser method');
+    tt.ok(promise instanceof Promise, 'getCurrentUser returns a Promise');
+  });
+
+  t.test('success', (tt) => {
+    cGetCurrent.reset();
+
+    FakeCognitoUser.prototype.getUsername = sinon.stub.returns('testusername');
+
+    const idTokenMethods = { getJwtToken: sinon.stub() };
+    FakeCognitoUserSession.prototype.getIdToken = sinon.stub().returns(idTokenMethods);
+
+    const refreshTokenMethods = { getJwtToken: sinon.stub() };
+    FakeCognitoUserSession.prototype.getRefreshToken = sinon.stub().returns(refreshTokenMethods);
+
+    const accessTokenMethods = { getJwtToken: sinon.stub() };
+    FakeCognitoUserSession.prototype.getAccessToken = sinon.stub().returns(accessTokenMethods);
+
+    // Returns cognitoUser
+    cGetCurrent.returns(FakeCognitoUser.prototype);
+
+    cGetSession.yields(null, FakeCognitoUserSession.prototype);
+
+    // call the signUp action as if it is called by vuex
+    actions.getCurrentUser({ commit: commitSpy }).then(
+      () => {
+        tt.pass('getCurrentUser returned promise.resolve() was called');
+      }
+    );
+
+    tt.plan(6);
+
+    tt.ok(cGetSession.called, 'cognitoUser.getSession should be called');
+    tt.ok(cGetSession.calledOnce, 'cognitoUser.getSession should be called exactly once');
+    tt.ok(commitSpy.called, 'state.commit should be called');
+    tt.ok(commitSpy.calledOnce, 'state.commit should be called exactly once');
+    tt.ok(commitSpy.calledWithMatch(
+      sinon.match(types.AUTHENTICATE),
+    ), `mutation ${types.AUTHENTICATE} should receive CognitoUser payload`);
+  });
+
+  t.test("reject when can't get a session", (tt) => {
+    cGetSession.reset();
+
+    const errorMessage = "Can't retrieve user's session";
+
+    const fullError = {
+      code: 'NotAuthorizedException',
+      message: errorMessage,
+    };
+
+    cGetSession.yields(fullError, null);
+
+    tt.plan(1);
+
+    actions.getCurrentUser({ commit: commitSpy }).catch(
+      (err) => {
+        tt.deepEqual(err, fullError, 'getCurrentUser should reject with { code, message }');
+      }
+    );
+  });
+});
 
 test('cognito signUp', { timeout: 500 }, (t) => {
   const cSignUp = FakeCognitoUserPool.prototype.signUp = sinon.stub();

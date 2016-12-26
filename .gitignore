@@ -6,4 +6,4 @@ test/unit/coverage
 config/cognito.js
 .nyc_output/
 coverage/
-dist/
+lib
