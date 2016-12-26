@@ -6,7 +6,8 @@
   "scripts": {
     "test": "tape-watch test/unit/index.js -p tap-spec",
     "compile": "babel -d lib/ src/",
-    "prepublish": "npm run compile"
+    "prepublish": "npm run compile",
+    "preinstall": "npm run compile"
   },
   "author": "Anton Sekatski <antonsekatski@gmail.com>",
   "license": "MIT",
