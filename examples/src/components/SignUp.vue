@@ -68,10 +68,12 @@ export default {
       this.protectedUI = true;
       this.$store.dispatch('signUp', {
         username: this.username,
-        email: this.email,
-        name: this.name,
-        phone_number: this.phone_number,
         password: this.password,
+        attributes: {
+          email: this.email,
+          name: this.name,
+          phone_number: this.phone_number,
+        },
       }).then(() => {
         this.disableAllInputs = true;
         this.successMessage = 'Successfuly signed up';

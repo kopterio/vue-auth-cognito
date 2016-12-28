@@ -3,7 +3,7 @@ import Vuex from 'vuex';
 import createLogger from 'vuex/dist/logger';
 
 import cognitoConfig from '../../config/cognito';
-import CognitoAuth from '../../lib';
+import CognitoAuth from '../../../src';
 
 Vue.use(Vuex);
 
