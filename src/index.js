@@ -9,11 +9,16 @@ const state = {
 // const state = {
 //   user: {
 //     username: 'username in any format: email, UUID, etc.',
-//     tokens: {
+//     tokens: null | {
 //       IdToken: '', // in JWT format
 //       RefreshToken: '', // in JWT format
 //       AccessToken: '', // in JWT format
 //     },
+//     attributes: {
+//       email: 'user email',
+//       phone_number: '+1 555 12345',
+//       ...
+//     }
 //   },
 // };
 

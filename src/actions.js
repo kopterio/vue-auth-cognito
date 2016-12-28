@@ -15,6 +15,7 @@ function constructUser(cognitoUser, session) {
       RefreshToken: session.getRefreshToken().getJwtToken(),
       AccessToken: session.getAccessToken().getJwtToken(),
     },
+    attributes: {},
   };
 }
 
@@ -81,13 +82,11 @@ export default function actionsFactory(config) {
 
     signUp({ commit }, userInfo) {
       /* userInfo: { username, password, attributes } */
-      const userAttributes = [];
-
-      (userInfo.attributes || []).forEach((attr) => {
-        userAttributes.push(new CognitoUserAttribute({
-          Name: attr.name,
-          Value: attr.value,
-        }));
+      const userAttributes = Object.keys(userInfo.attributes || {}).map((key) => {
+        return new CognitoUserAttribute({
+          Name: key,
+          Value: userInfo.attributes[key],
+        });
       });
 
       return new Promise((resolve, reject) => {
@@ -95,7 +94,11 @@ export default function actionsFactory(config) {
           userInfo.username, userInfo.password, userAttributes, null,
           (err, data) => {
             if (!err) {
-              commit(types.AUTHENTICATE, data.user);
+              commit(types.AUTHENTICATE, {
+                username: data.user.getUsername(),
+                tokens: null, // no session yet
+                attributes: {},
+              });
               resolve({ userConfirmationNecessary: !data.userConfirmed });
               return;
             }
@@ -240,13 +243,11 @@ export default function actionsFactory(config) {
         // Restore session without making an additional call to API
         cognitoUser.signInUserSession = new CognitoUserSession(state.user.tokens);
 
-        const attributes = [];
-
-        (payload || []).forEach((attr) => {
-          attributes.push(new CognitoUserAttribute({
-            Name: attr.name,
-            Value: attr.value,
-          }));
+        const attributes = Object.keys(payload || {}).map((key) => {
+          return new CognitoUserAttribute({
+            Name: key,
+            Value: payload[key],
+          });
         });
 
         cognitoUser.updateAttributes(attributes,

@@ -1,14 +1,21 @@
 {
   "name": "vue-auth-cognito",
-  "version": "1.0.0",
-  "description": "Amazon Cognito for Vue/Vuex",
+  "version": "0.1.0",
+  "description": "A Vue.js Vuex module for authentication using Amazon AWS Cognito",
   "main": "lib/index.js",
   "scripts": {
     "test": "tape-watch test/unit/index.js -p tap-spec",
     "compile": "babel -d lib/ src/",
-    "prepublish": "npm run compile"
+    "prepublish": "npm run compile",
+    "coverage": "tap --cov --coverage-report=html --strict test/unit/index.js"
   },
-  "author": "Anton Sekatski <antonsekatski@gmail.com>",
+  "author": "Evgeny Zislis <evgeny@kesor.net>",
+  "contributors": [
+    {
+      "name": "Anton Sekatski",
+      "email": "antonsekatski@gmail.com"
+    }
+  ],
   "license": "MIT",
   "dependencies": {
     "amazon-cognito-identity-js": "^1.9.1",
