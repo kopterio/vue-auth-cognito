@@ -8,7 +8,7 @@ All actions return a promise to be able to easily control execution flow.
 
 ## getCurrentUser
 
-Saves CognitoUser class to store as `$store.cognito.user`.
+Retrieve current user and save user schema to store.
 
 Returned promise rejects with an error if there is no previously authenticated user:
 
@@ -54,13 +54,15 @@ Creates user with the following payload:
 {
   username: 'test',
   password: 'Qwerty123!',
-  email: 'test@test.com',
-  name: 'MegaTest',
-  phone_number: '+15553334444',
+  attributes: {
+    email: 'test@test.com',
+    name: 'MegaTest',
+    phone_number: '+15553334444',
+  }
 }
 ```
 
-You can change `username` to be an email address.
+You can change `username` to be any value, for example, an email address or UUID. It's important to know that Amazon Cognito doesn't allow changing username after signing up.
 
 Usage:
 
@@ -198,16 +200,24 @@ Returned promise rejects with the following error object:
 
 > Only for authenticated users
 
-Updates user attributes. Payload is a list of CognitoUserAttribute classes from 'amazon-cognito-identity-js/src/CognitoUserAttribute'.
+Updates user attributes. Payload is an object where key is an attribute name:
+
+```
+{
+  email: 'value',
+  phone_number: 'bruce@wayne.com',
+  username: 'batman' // see documentation on Cognito attributes
+}
+```
 
 Usage:
 
 ```
-this.$store.dispatch('updateAttributes', [
-  new CognitoUserAttribute({ Name: 'email', Value: 'bruce@wayne.com' }),
-  new CognitoUserAttribute({ Name: 'name', Value: 'Richard' }),
-  new CognitoUserAttribute({ Name: 'phone_number', Value: '+15551234567' }),
-]);
+this.$store.dispatch('updateAttributes', {
+  email: 'bruce@wayne.com',
+  name: 'Bruce',
+  phone_number: '+15551234567',
+});
 ```
 
 Returned promise rejects with the following error object:
@@ -221,7 +231,7 @@ Returned promise rejects with the following error object:
 
 ## signOut
 
-Removes user from the store (`$store.cognito.user`) and Cognito session from Local Storage.
+Removes user from the store (for example, `$store.cognito.user`) and Cognito session from Local Storage.
 
 Returned promise rejects with an error if there is no previously authenticated user:
 

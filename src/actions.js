@@ -195,7 +195,7 @@ export default function actionsFactory(config) {
     changePassword({ state }, payload) {
       return new Promise((resolve, reject) => {
         // Make sure the user is authenticated
-        if (state.user === null) {
+        if (state.user === null || (state.user && state.user.tokens === null)) {
           reject({
             message: 'User is unauthenticated',
           });
@@ -228,7 +228,7 @@ export default function actionsFactory(config) {
     updateAttributes({ commit, state }, payload) {
       return new Promise((resolve, reject) => {
         // Make sure the user is authenticated
-        if (state.user === null) {
+        if (state.user === null || (state.user && state.user.tokens === null)) {
           reject({
             message: 'User is unauthenticated',
           });
@@ -268,7 +268,7 @@ export default function actionsFactory(config) {
     signOut({ commit, state }) {
       return new Promise((resolve, reject) => {
         // Make sure the user is authenticated
-        if (state.user === null) {
+        if (state.user === null || (state.user && state.user.tokens === null)) {
           reject({
             message: 'User is unauthenticated',
           });
