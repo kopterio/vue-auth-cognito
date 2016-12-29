@@ -4,7 +4,8 @@
   "description": "A Vue.js Vuex module for authentication using Amazon AWS Cognito",
   "main": "lib/index.js",
   "scripts": {
-    "test": "tape-watch test/unit/index.js -p tap-spec",
+    "test": "tap -Rspec test/unit/index.js",
+    "test:watch": "tape-watch test/unit/index.js -p tap-spec",
     "compile": "babel -d lib/ src/",
     "prepublish": "npm run compile",
     "coverage": "tap --cov --coverage-report=html --strict test/unit/index.js"
