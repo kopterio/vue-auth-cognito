@@ -1,5 +1,7 @@
 # vue-auth-cognito
 
+[![Build Status](https://travis-ci.org/kopterio/vue-auth-cognito.svg?branch=master)](https://travis-ci.org/kopterio/vue-auth-cognito)
+
 This small library serves as a wrapper of Amazon Cognito for Vuex.
 
 # Actions for dispatch method
