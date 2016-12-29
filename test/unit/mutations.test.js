@@ -1,7 +1,6 @@
 import Vue from 'vue';
 import Vuex from 'vuex';
 import test from 'tape';
-import * as sinon from 'sinon';
 
 import * as types from '../../src/mutation-types';
 
@@ -13,9 +12,8 @@ Vue.use(Vuex);
 const store = new Vuex.Store({
   modules: {
     cognito: new AuthCognito(fakeCognitoConfig),
-  }
+  },
 });
-
 
 test('AUTHENTICATE mutation', { timeout: 500 }, (t) => {
   const testUser = {

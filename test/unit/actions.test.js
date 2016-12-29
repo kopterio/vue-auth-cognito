@@ -53,7 +53,7 @@ test('getCurrentUser', { timeout: 500 }, (t) => {
   const cognitoUser = {
     getSession: sinon.stub(),
     getUsername: sinon.stub().returns('testusername'),
-  }
+  };
   const getCurrentUser = FakeCognitoUserPool.prototype.getCurrentUser = sinon.stub();
 
   t.plan(3);
@@ -71,7 +71,7 @@ test('getCurrentUser', { timeout: 500 }, (t) => {
     const promise = actions.getCurrentUser({ commit: commitSpy }).catch(
       (err) => {
         tt.deepEqual(err, fullError, 'signUp should reject with { code, message }');
-      }
+      },
     );
     tt.ok('getCurrentUser' in actions, 'exported actions contain a getCurrentUser method');
     tt.ok(promise instanceof Promise, 'getCurrentUser returns a Promise');
@@ -92,11 +92,9 @@ test('getCurrentUser', { timeout: 500 }, (t) => {
 
     tt.plan(1);
 
-    actions.getCurrentUser({ commit: commitSpy }).catch(
-      (err) => {
-        tt.deepEqual(err, fullError, 'getCurrentUser should reject with { code, message }');
-      }
-    );
+    actions.getCurrentUser({ commit: commitSpy }).catch((err) => {
+      tt.deepEqual(err, fullError, 'getCurrentUser should reject with { code, message }');
+    });
   });
 
   t.test('success', (tt) => {
@@ -108,11 +106,9 @@ test('getCurrentUser', { timeout: 500 }, (t) => {
     cognitoUser.getSession.yields(null, sessionInstance);
 
     // call the signUp action as if it is called by vuex
-    actions.getCurrentUser({ commit: commitSpy }).then(
-      () => {
-        tt.pass('getCurrentUser returned promise.resolve() was called');
-      }
-    );
+    actions.getCurrentUser({ commit: commitSpy }).then(() => {
+      tt.pass('getCurrentUser returned promise.resolve() was called');
+    });
 
     tt.plan(10);
 
@@ -177,11 +173,9 @@ test('authenticateUser', { timeout: 500 }, (t) => {
 
     tt.plan(1);
 
-    actions.authenticateUser({ commit: commitSpy }, payload).catch(
-      (err) => {
-        tt.deepEqual(err, fullError, 'authenticateUser should reject with { code, message }');
-      }
-    );
+    actions.authenticateUser({ commit: commitSpy }, payload).catch((err) => {
+      tt.deepEqual(err, fullError, 'authenticateUser should reject with { code, message }');
+    });
   });
 
   t.test('onSuccess', (tt) => {
@@ -199,7 +193,7 @@ test('authenticateUser', { timeout: 500 }, (t) => {
     actions.authenticateUser({ commit: commitSpy }, payload).then(
       ({ userConfirmationNecessary }) => {
         tt.ok(userConfirmationNecessary, true, 'userConfirmationNecessary should be passed to resolve');
-      }
+      },
     );
 
     tt.plan(6);
@@ -207,7 +201,7 @@ test('authenticateUser', { timeout: 500 }, (t) => {
     tt.ok(authenticateUser.called, 'cognitoUser.authenticateUser should be called');
     tt.ok(authenticateUser.calledOnce, 'cognitoUser.authenticateUser should be called once');
     tt.ok(authenticateUser.calledWithMatch(
-      sinon.match.instanceOf(FakeAuthenticationDetails)
+      sinon.match.instanceOf(FakeAuthenticationDetails),
     ), "cognitoUser.authenticateUser's first argument should be AuthenticationDetails");
 
     tt.ok(commitSpy.called, 'commit should be called');
@@ -221,7 +215,7 @@ test('authenticateUser', { timeout: 500 }, (t) => {
           RefreshToken: 'refresh',
         },
         attributes: {},
-      })
+      }),
     ), `mutation ${types.AUTHENTICATE} should receive user payload`);
   });
 });
@@ -229,7 +223,7 @@ test('authenticateUser', { timeout: 500 }, (t) => {
 test('signUp', { timeout: 500 }, (t) => {
   const cognitoUser = {
     getUsername: sinon.stub().returns('testusername'),
-  }
+  };
   const signUp = FakeCognitoUserPool.prototype.signUp = sinon.stub();
 
   const promise = actions.signUp({ }, userInfo);
@@ -242,7 +236,7 @@ test('signUp', { timeout: 500 }, (t) => {
   t.test('onSuccess', (tt) => {
     commitSpy.reset();
     signUp.reset();
-    
+
     // set CognitoUserPool.signUp to call the callback with err:null,data:stuff
     signUp.withArgs(userInfo.username, userInfo.password).yields(null, {
       user: cognitoUser,
@@ -253,7 +247,7 @@ test('signUp', { timeout: 500 }, (t) => {
     actions.signUp({ commit: commitSpy }, userInfo).then(
       ({ userConfirmationNecessary }) => {
         tt.ok(userConfirmationNecessary, true, 'userConfirmationNecessary should be passed to resolve');
-      }
+      },
     );
 
     tt.plan(7);
@@ -270,7 +264,7 @@ test('signUp', { timeout: 500 }, (t) => {
         username: 'testusername',
         tokens: null,
         attributes: {},
-      })
+      }),
     ), `mutation ${types.AUTHENTICATE} should receive user payload`);
   });
 
@@ -291,7 +285,7 @@ test('signUp', { timeout: 500 }, (t) => {
     actions.signUp({ commit: commitSpy }, userInfo).catch(
       (err) => {
         tt.deepEqual(err, fullError, 'signUp should reject with { code, message }');
-      }
+      },
     );
   });
 });
@@ -330,14 +324,14 @@ test('confirmRegistration', { timeout: 500 }, (t) => {
     actions.confirmRegistration({ commit: commitSpy }, payload).then(
       () => {
         tt.pass('confirmRegistration returned promise.resolve() was called');
-      }
+      },
     );
 
     tt.plan(4);
     tt.ok(cConfirm.called, 'confirmRegistration should be called');
     tt.ok(cConfirm.calledOnce, 'confirmRegistration should be called once');
     tt.ok(cConfirm.calledWithMatch(
-      sinon.match(payload.code)
+      sinon.match(payload.code),
     ), 'confirmRegistration should be called with the `code` argument');
   });
 
@@ -394,7 +388,7 @@ test('forgotPassword', { timeout: 500 }, (t) => {
     actions.forgotPassword({ }, payload).then(
       () => {
         tt.pass('forgotPassword returned promise.resolve() was called');
-      }
+      },
     );
 
     tt.plan(3);
@@ -418,7 +412,7 @@ test('forgotPassword', { timeout: 500 }, (t) => {
     actions.forgotPassword({ }, payload).catch(
       (err) => {
         tt.deepEqual(err, fullError, 'forgotPassword should reject with { code, message }');
-      }
+      },
     );
   });
 });
@@ -465,7 +459,7 @@ test('confirmPassword', { timeout: 500 }, (t) => {
     actions.confirmPassword({ commit: commitSpy }, payload).then(
       () => {
         tt.pass('confirmPassword returned promise.resolve() was called');
-      }
+      },
     );
 
     tt.plan(4);
@@ -473,7 +467,7 @@ test('confirmPassword', { timeout: 500 }, (t) => {
     tt.ok(cConfirm.called, 'confirmPassword should be called');
     tt.ok(cConfirm.calledOnce, 'confirmPassword should be called once');
     tt.ok(cConfirm.calledWithMatch(
-      sinon.match(payload.code)
+      sinon.match(payload.code),
     ), 'confirmPassword should be called with the `code` argument');
   });
 
@@ -494,7 +488,7 @@ test('confirmPassword', { timeout: 500 }, (t) => {
     actions.confirmPassword({ commit: commitSpy }, payload).catch(
       (err) => {
         tt.deepEqual(err, fullError, 'confirmPassword should reject with { code, message }');
-      }
+      },
     );
   });
 });
@@ -533,7 +527,7 @@ test('resendConfirmationCode', { timeout: 500 }, (t) => {
     actions.resendConfirmationCode({ commit: commitSpy }, payload).then(
       () => {
         tt.pass('resendConfirmationCode returned promise.resolve() was called');
-      }
+      },
     );
 
     tt.plan(3);
@@ -554,7 +548,7 @@ test('resendConfirmationCode', { timeout: 500 }, (t) => {
     actions.resendConfirmationCode({ commit: commitSpy }, payload).catch(
       (err) => {
         tt.deepEqual(err, fullError, 'resendConfirmationCode should reject with { code, message }');
-      }
+      },
     );
   });
 });
@@ -577,7 +571,7 @@ test('changePassword', { timeout: 500 }, (t) => {
         IdToken: 'id',
         AccessToken: 'access',
         RefreshToken: 'refresh',
-      }
+      },
     },
   };
 
@@ -604,30 +598,30 @@ test('changePassword', { timeout: 500 }, (t) => {
   t.ok(FakeCognitoUserSession.calledWithMatch(sinon.match(state.user.tokens)), 'CognitoUser constructor should receive { Pool, Username }');
 
   t.test('rejects when state.user is null', (tt) => {
-    tt.plan(1)
+    tt.plan(1);
 
     const fullError = {
       message: 'User is unauthenticated',
-    }
+    };
 
     actions.changePassword({ state: { user: null } }).catch(
       (err) => {
         tt.deepEqual(err, fullError, 'getUserAttributes should reject with { message }');
-      }
+      },
     );
   });
 
   t.test('rejects when state.user.tokens is null', (tt) => {
-    tt.plan(1)
+    tt.plan(1);
 
     const fullError = {
       message: 'User is unauthenticated',
-    }
+    };
 
     actions.changePassword({ state: { user: { tokens: null } } }).catch(
       (err) => {
         tt.deepEqual(err, fullError, 'getUserAttributes should reject with { message }');
-      }
+      },
     );
   });
 
@@ -639,7 +633,7 @@ test('changePassword', { timeout: 500 }, (t) => {
     actions.changePassword({ state }, payload).then(
       () => {
         tt.pass('changePassword returned promise.resolve() was called');
-      }
+      },
     );
 
     tt.plan(4);
@@ -664,7 +658,7 @@ test('changePassword', { timeout: 500 }, (t) => {
     actions.changePassword({ state }, payload).catch(
       (err) => {
         tt.deepEqual(err, fullError, 'changePassword should reject with { code, message }');
-      }
+      },
     );
   });
 });
@@ -681,12 +675,10 @@ test('updateAttributes', { timeout: 500 }, (t) => {
     phone_number: userInfo.phone_number,
   };
 
-  const attributes = Object.keys(payload || {}).map((key) => {
-    return new FakeUserAttribute({
-      Name: key,
-      Value: payload[key],
-    });
-  });
+  const attributes = Object.keys(payload || {}).map(key => new FakeUserAttribute({
+    Name: key,
+    Value: payload[key],
+  }));
 
   const state = {
     user: {
@@ -695,7 +687,7 @@ test('updateAttributes', { timeout: 500 }, (t) => {
         IdToken: 'id',
         AccessToken: 'access',
         RefreshToken: 'refresh',
-      }
+      },
     },
   };
 
@@ -724,30 +716,30 @@ test('updateAttributes', { timeout: 500 }, (t) => {
   t.ok(FakeCognitoUserSession.calledWithMatch(sinon.match(state.user.tokens)), 'CognitoUser constructor should receive { Pool, Username }');
 
   t.test('rejects when state.user is null', (tt) => {
-    tt.plan(1)
+    tt.plan(1);
 
     const fullError = {
       message: 'User is unauthenticated',
-    }
+    };
 
     actions.updateAttributes({ state: { user: null } }).catch(
       (err) => {
         tt.deepEqual(err, fullError, 'getUserAttributes should reject with { message }');
-      }
+      },
     );
   });
 
   t.test('rejects when state.user.tokens is null', (tt) => {
-    tt.plan(1)
+    tt.plan(1);
 
     const fullError = {
       message: 'User is unauthenticated',
-    }
+    };
 
     actions.updateAttributes({ state: { user: { tokens: null } } }).catch(
       (err) => {
         tt.deepEqual(err, fullError, 'getUserAttributes should reject with { message }');
-      }
+      },
     );
   });
 
@@ -759,7 +751,7 @@ test('updateAttributes', { timeout: 500 }, (t) => {
     actions.updateAttributes({ state }, payload).then(
       () => {
         tt.pass('updateAttributes returned promise.resolve() was called');
-      }
+      },
     );
 
     tt.plan(4);
@@ -784,7 +776,7 @@ test('updateAttributes', { timeout: 500 }, (t) => {
     actions.updateAttributes({ state }, payload).catch(
       (err) => {
         tt.deepEqual(err, fullError, 'updateAttributes should reject with { code, message }');
-      }
+      },
     );
   });
 
@@ -800,7 +792,7 @@ test('updateAttributes', { timeout: 500 }, (t) => {
     actions.signOut({ state }).catch(
       (err) => {
         tt.deepEqual(err, error, 'updateAttributes should reject if the user is unauthenticated');
-      }
+      },
     );
 
     tt.plan(1);
@@ -820,7 +812,7 @@ test('getUserAttributes', { timeout: 500 }, (t) => {
         IdToken: 'id',
         AccessToken: 'access',
         RefreshToken: 'refresh',
-      }
+      },
     },
   };
 
@@ -847,30 +839,30 @@ test('getUserAttributes', { timeout: 500 }, (t) => {
   t.ok(FakeCognitoUserSession.calledWithMatch(sinon.match(state.user.tokens)), 'CognitoUser constructor should receive { Pool, Username }');
 
   t.test('rejects when state.user is null', (tt) => {
-    tt.plan(1)
+    tt.plan(1);
 
     const fullError = {
       message: 'User is unauthenticated',
-    }
+    };
 
     actions.getUserAttributes({ state: { user: null } }).catch(
       (err) => {
         tt.deepEqual(err, fullError, 'getUserAttributes should reject with { message }');
-      }
+      },
     );
   });
 
   t.test('rejects when state.user.tokens is null', (tt) => {
-    tt.plan(1)
+    tt.plan(1);
 
     const fullError = {
       message: 'User is unauthenticated',
-    }
+    };
 
     actions.getUserAttributes({ state: { user: { tokens: null } } }).catch(
       (err) => {
         tt.deepEqual(err, fullError, 'getUserAttributes should reject with { message }');
-      }
+      },
     );
   });
 
@@ -879,14 +871,14 @@ test('getUserAttributes', { timeout: 500 }, (t) => {
 
     const cognitoAttributes = [
       { Name: 'email', Value: 'test@test.com' },
-    ]
+    ];
 
     getUserAttributes.yields(null, cognitoAttributes);
 
     actions.getUserAttributes({ commit: commitSpy, state }).then(
       () => {
         tt.pass('getUserAttributes returned promise.resolve() was called');
-      }
+      },
     );
 
     tt.plan(6);
@@ -898,8 +890,8 @@ test('getUserAttributes', { timeout: 500 }, (t) => {
     tt.ok(commitSpy.calledWithMatch(
       sinon.match(types.ATTRIBUTES),
       sinon.match({
-        email: 'test@test.com'
-      })
+        email: 'test@test.com',
+      }),
     ), `mutation ${types.ATTRIBUTES} should receive attributes map payload`);
   });
 
@@ -917,7 +909,7 @@ test('getUserAttributes', { timeout: 500 }, (t) => {
     actions.getUserAttributes({ state }).catch(
       (err) => {
         tt.deepEqual(err, fullError, 'getUserAttributes should reject with { code, message }');
-      }
+      },
     );
   });
 });
@@ -946,7 +938,7 @@ test('signOut', { timeout: 500 }, (t) => {
     actions.signOut({ commit: commitSpy, state }).then(
       () => {
         tt.pass('signOut returned promise.resolve() was called');
-      }
+      },
     );
 
     tt.plan(6);
@@ -956,7 +948,7 @@ test('signOut', { timeout: 500 }, (t) => {
     tt.ok(commitSpy.called, 'state.commit should be called');
     tt.ok(commitSpy.calledOnce, 'state.commit should be called exactly once');
     tt.ok(commitSpy.calledWithMatch(
-      sinon.match(types.SIGNOUT)
+      sinon.match(types.SIGNOUT),
     ), `mutation ${types.SIGNOUT} should be commited`);
   });
 
@@ -974,7 +966,7 @@ test('signOut', { timeout: 500 }, (t) => {
     actions.signOut({ commit: commitSpy, state }).catch(
       (err) => {
         tt.deepEqual(err, error, 'signOut should reject if the user is unauthenticated');
-      }
+      },
     );
   });
 });
