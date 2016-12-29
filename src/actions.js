@@ -68,7 +68,6 @@ export default function actionsFactory(config) {
           reject(err);
         },
         onSuccess: (session, userConfirmationNecessary) => {
-          console.log(constructUser(cognitoUser, session));
           commit(types.AUTHENTICATE, constructUser(cognitoUser, session));
           resolve({ userConfirmationNecessary });
         },
