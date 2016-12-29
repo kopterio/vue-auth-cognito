@@ -7,3 +7,7 @@ cache: yarn
 addons:
   srcclr: true
   code_climate: true
+
+after_success:
+  - yarn global add codeclimate-test-reporter
+  - codeclimate-test-reporter < coverage/lcov.ingo
