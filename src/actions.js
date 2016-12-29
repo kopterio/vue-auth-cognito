@@ -12,8 +12,8 @@ function constructUser(cognitoUser, session) {
     username: cognitoUser.getUsername(),
     tokens: {
       IdToken: session.getIdToken().getJwtToken(),
-      RefreshToken: session.getRefreshToken().getJwtToken(),
       AccessToken: session.getAccessToken().getJwtToken(),
+      RefreshToken: session.getRefreshToken().getJwtToken(),
     },
     attributes: {},
   };
@@ -68,6 +68,7 @@ export default function actionsFactory(config) {
           reject(err);
         },
         onSuccess: (session, userConfirmationNecessary) => {
+          console.log(constructUser(cognitoUser, session));
           commit(types.AUTHENTICATE, constructUser(cognitoUser, session));
           resolve({ userConfirmationNecessary });
         },

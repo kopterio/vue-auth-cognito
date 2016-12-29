@@ -43,8 +43,8 @@ function createSessionStub() {
 
   return {
     getIdToken: sinon.stub().returns(idTokenMethods),
-    getRefreshToken: sinon.stub().returns(accessTokenMethods),
-    getAccessToken: sinon.stub().returns(refreshTokenMethods),
+    getRefreshToken: sinon.stub().returns(refreshTokenMethods),
+    getAccessToken: sinon.stub().returns(accessTokenMethods),
   };
 }
 
@@ -130,7 +130,7 @@ test('getCurrentUser', { timeout: 500 }, (t) => {
   });
 });
 
-test('authenticateUser', { timeout: 500 }, (t) => {
+test.only('authenticateUser', { timeout: 500 }, (t) => {
   FakeCognitoUser.reset();
   FakeCognitoUser.prototype.authenticateUser = sinon.stub();
 
@@ -189,7 +189,7 @@ test('authenticateUser', { timeout: 500 }, (t) => {
 
     const sessionInstance = createSessionStub();
 
-    FakeCognitoUser.prototype.getUsername = sinon.stub().returns('testusername');
+    FakeCognitoUser.prototype.getUsername = sinon.stub().returns(payload.username);
 
     const authenticateUser = FakeCognitoUser.prototype.authenticateUser =
       sinon.spy((authDetails, callbacks) => {
@@ -212,7 +212,16 @@ test('authenticateUser', { timeout: 500 }, (t) => {
 
     tt.ok(commitSpy.called, 'commit should be called');
     tt.ok(commitSpy.calledWithMatch(
-      sinon.match(types.AUTHENTICATE)
+      sinon.match(types.AUTHENTICATE),
+      sinon.match({
+        username: payload.username,
+        tokens: {
+          IdToken: 'id',
+          AccessToken: 'access',
+          RefreshToken: 'refresh',
+        },
+        attributes: {},
+      })
     ), `mutation ${types.AUTHENTICATE} should receive user payload`);
   });
 });
