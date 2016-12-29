@@ -42,10 +42,7 @@ export default function actionsFactory(config) {
 
         cognitoUser.getSession((err, session) => {
           if (err) {
-            reject({
-              code: err.code,
-              message: err.message,
-            });
+            reject(err);
             return;
           }
           // Call AUTHENTICATE because it's utterly the same
@@ -68,10 +65,7 @@ export default function actionsFactory(config) {
 
       return new Promise((resolve, reject) => cognitoUser.authenticateUser(authDetails, {
         onFailure: (err) => {
-          reject({
-            code: err.code,
-            message: err.message,
-          });
+          reject(err);
         },
         onSuccess: (session, userConfirmationNecessary) => {
           commit(types.AUTHENTICATE, constructUser(cognitoUser, session));
@@ -102,10 +96,7 @@ export default function actionsFactory(config) {
               resolve({ userConfirmationNecessary: !data.userConfirmed });
               return;
             }
-            reject({
-              code: err.code,
-              message: err.message,
-            });
+            reject(err);
           });
       });
     },
@@ -122,10 +113,7 @@ export default function actionsFactory(config) {
             resolve();
             return;
           }
-          reject({
-            code: err.code,
-            message: err.message,
-          });
+          reject(err);
         });
       });
     },
@@ -143,10 +131,7 @@ export default function actionsFactory(config) {
               resolve();
               return;
             }
-            reject({
-              code: err.code,
-              message: err.message,
-            });
+            reject(err);
           });
       });
     },
@@ -162,10 +147,7 @@ export default function actionsFactory(config) {
           resolve();
         },
         onFailure(err) {
-          reject({
-            code: err.code,
-            message: err.message,
-          });
+          reject(err);
         },
       }));
     },
@@ -179,10 +161,7 @@ export default function actionsFactory(config) {
       return new Promise((resolve, reject) => {
         cognitoUser.confirmPassword(payload.code, payload.newPassword, {
           onFailure(err) {
-            reject({
-              code: err.code,
-              message: err.message,
-            });
+            reject(err);
           },
           onSuccess() {
             resolve();
@@ -216,10 +195,7 @@ export default function actionsFactory(config) {
               resolve();
               return;
             }
-            reject({
-              code: err.code,
-              message: err.message,
-            });
+            reject(err);
           });
       });
     },
@@ -256,11 +232,44 @@ export default function actionsFactory(config) {
               resolve();
               return;
             }
-            reject({
-              code: err.code,
-              message: err.message,
-            });
+            reject(err);
           });
+      });
+    },
+
+    // Only for authenticated users
+    getUserAttributes({ commit, state }) {
+      return new Promise((resolve, reject) => {
+        // Make sure the user is authenticated
+        if (state.user === null || (state.user && state.user.tokens === null)) {
+          reject({
+            message: 'User is unauthenticated',
+          });
+          return;
+        }
+
+        const cognitoUser = new CognitoUser({
+          Pool: cognitoUserPool,
+          Username: state.user.username,
+        });
+
+        // Restore session without making an additional call to API
+        cognitoUser.signInUserSession = new CognitoUserSession(state.user.tokens);
+
+        cognitoUser.getUserAttributes((err, attributes) => {
+          if (err) {
+            reject(err);
+            return;            
+          }
+
+          const attributesMap = (attributes || []).reduce((accum, item) => {
+            accum[item.Name] = item.Value;
+            return accum;
+          }, {});
+
+          commit(types.ATTRIBUTES, attributesMap);
+          resolve(attributesMap);
+        });
       });
     },
 

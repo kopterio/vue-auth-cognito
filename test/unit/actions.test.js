@@ -552,6 +552,7 @@ test('resendConfirmationCode', { timeout: 500 }, (t) => {
 
 test('changePassword', { timeout: 500 }, (t) => {
   FakeCognitoUser.reset();
+  FakeCognitoUserSession.reset();
 
   const cChange = FakeCognitoUser.prototype.changePassword = sinon.stub();
 
@@ -561,17 +562,65 @@ test('changePassword', { timeout: 500 }, (t) => {
   };
 
   const state = {
-    user: FakeCognitoUser.prototype,
+    user: {
+      username: 'test',
+      tokens: {
+        IdToken: 'id',
+        AccessToken: 'access',
+        RefreshToken: 'refresh',
+      }
+    },
   };
 
   const errorMessage = 'Something went wrong';
 
   const promise = actions.changePassword({ state }, payload);
 
-  t.plan(5);
+  t.plan(12);
 
   t.ok('changePassword' in actions, 'exported actions contain a changePassword method');
   t.ok(promise instanceof Promise, 'changePassword returns a Promise');
+
+  // User tests
+  t.ok(FakeCognitoUser.called, 'CognitoUser constructor should be called');
+  t.ok(FakeCognitoUser.calledOnce, 'CognitoUser constructor should be called once');
+  t.ok(FakeCognitoUser.calledWithMatch(sinon.match({
+    Pool: sinon.match.instanceOf(FakeCognitoUserPool),
+    Username: state.user.username,
+  })), 'CognitoUser constructor should receive { Pool, Username }');
+
+  // Session constructor tests
+  t.ok(FakeCognitoUserSession.called, 'CognitoUserSession constructor should be called');
+  t.ok(FakeCognitoUserSession.calledOnce, 'CognitoUserSession constructor should be called once');
+  t.ok(FakeCognitoUserSession.calledWithMatch(sinon.match(state.user.tokens)), 'CognitoUser constructor should receive { Pool, Username }');
+
+  t.test('rejects when state.user is null', (tt) => {
+    tt.plan(1)
+
+    const fullError = {
+      message: 'User is unauthenticated',
+    }
+
+    actions.changePassword({ state: { user: null } }).catch(
+      (err) => {
+        tt.deepEqual(err, fullError, 'getUserAttributes should reject with { message }');
+      }
+    );
+  });
+
+  t.test('rejects when state.user.tokens is null', (tt) => {
+    tt.plan(1)
+
+    const fullError = {
+      message: 'User is unauthenticated',
+    }
+
+    actions.changePassword({ state: { user: { tokens: null } } }).catch(
+      (err) => {
+        tt.deepEqual(err, fullError, 'getUserAttributes should reject with { message }');
+      }
+    );
+  });
 
   t.test('success', (tt) => {
     cChange.reset();
@@ -609,28 +658,11 @@ test('changePassword', { timeout: 500 }, (t) => {
       }
     );
   });
-
-  t.test('reject', (tt) => {
-    cChange.reset();
-
-    state.user = null;
-
-    const error = {
-      message: 'User is unauthenticated',
-    };
-
-    tt.plan(1);
-
-    actions.changePassword({ state }).catch(
-      (err) => {
-        tt.deepEqual(err, error, 'changePassword should reject if the user is unauthenticated');
-      }
-    );
-  });
 });
 
 test('updateAttributes', { timeout: 500 }, (t) => {
   FakeCognitoUser.reset();
+  FakeCognitoUserSession.reset();
 
   const updateAttributes = FakeCognitoUser.prototype.updateAttributes = sinon.stub();
 
@@ -639,10 +671,6 @@ test('updateAttributes', { timeout: 500 }, (t) => {
     name: userInfo.name,
     phone_number: userInfo.phone_number,
   };
-   
-  // new FakeUserAttribute({ Name: 'email', Value: userInfo.email }),
-  // new FakeUserAttribute({ Name: 'name', Value: userInfo.name }),
-  // new FakeUserAttribute({ Name: 'phone_number', Value: userInfo.phone_number }),
 
   const attributes = Object.keys(payload || {}).map((key) => {
     return new FakeUserAttribute({
@@ -668,10 +696,23 @@ test('updateAttributes', { timeout: 500 }, (t) => {
 
   const promise = actions.updateAttributes({ state }, payload);
 
-  t.plan(6);
+  t.plan(13);
 
   t.ok('updateAttributes' in actions, 'exported actions contain a updateAttributes method');
   t.ok(promise instanceof Promise, 'updateAttributes returns a Promise');
+
+  // User tests
+  t.ok(FakeCognitoUser.called, 'CognitoUser constructor should be called');
+  t.ok(FakeCognitoUser.calledOnce, 'CognitoUser constructor should be called once');
+  t.ok(FakeCognitoUser.calledWithMatch(sinon.match({
+    Pool: sinon.match.instanceOf(FakeCognitoUserPool),
+    Username: state.user.username,
+  })), 'CognitoUser constructor should receive { Pool, Username }');
+
+  // Session constructor tests
+  t.ok(FakeCognitoUserSession.called, 'CognitoUserSession constructor should be called');
+  t.ok(FakeCognitoUserSession.calledOnce, 'CognitoUserSession constructor should be called once');
+  t.ok(FakeCognitoUserSession.calledWithMatch(sinon.match(state.user.tokens)), 'CognitoUser constructor should receive { Pool, Username }');
 
   t.test('rejects when state.user is null', (tt) => {
     tt.plan(1)
@@ -680,9 +721,23 @@ test('updateAttributes', { timeout: 500 }, (t) => {
       message: 'User is unauthenticated',
     }
 
-    actions.updateAttributes({ state: { user: null } }, payload).catch(
+    actions.updateAttributes({ state: { user: null } }).catch(
       (err) => {
-        tt.deepEqual(err, fullError, 'updateAttributes should reject with { message }');
+        tt.deepEqual(err, fullError, 'getUserAttributes should reject with { message }');
+      }
+    );
+  });
+
+  t.test('rejects when state.user.tokens is null', (tt) => {
+    tt.plan(1)
+
+    const fullError = {
+      message: 'User is unauthenticated',
+    }
+
+    actions.updateAttributes({ state: { user: { tokens: null } } }).catch(
+      (err) => {
+        tt.deepEqual(err, fullError, 'getUserAttributes should reject with { message }');
       }
     );
   });
@@ -740,6 +795,121 @@ test('updateAttributes', { timeout: 500 }, (t) => {
     );
 
     tt.plan(1);
+  });
+});
+
+test('getUserAttributes', { timeout: 500 }, (t) => {
+  FakeCognitoUser.reset();
+  FakeCognitoUserSession.reset();
+
+  const getUserAttributes = FakeCognitoUser.prototype.getUserAttributes = sinon.stub();
+
+  const state = {
+    user: {
+      username: 'test',
+      tokens: {
+        IdToken: 'id',
+        AccessToken: 'access',
+        RefreshToken: 'refresh',
+      }
+    },
+  };
+
+  const errorMessage = 'Something went wrong';
+
+  const promise = actions.getUserAttributes({ state });
+
+  t.plan(12);
+
+  t.ok('getUserAttributes' in actions, 'exported actions contain a getUserAttributes method');
+  t.ok(promise instanceof Promise, 'getUserAttributes returns a Promise');
+
+  // User tests
+  t.ok(FakeCognitoUser.called, 'CognitoUser constructor should be called');
+  t.ok(FakeCognitoUser.calledOnce, 'CognitoUser constructor should be called once');
+  t.ok(FakeCognitoUser.calledWithMatch(sinon.match({
+    Pool: sinon.match.instanceOf(FakeCognitoUserPool),
+    Username: state.user.username,
+  })), 'CognitoUser constructor should receive { Pool, Username }');
+
+  // Session constructor tests
+  t.ok(FakeCognitoUserSession.called, 'CognitoUserSession constructor should be called');
+  t.ok(FakeCognitoUserSession.calledOnce, 'CognitoUserSession constructor should be called once');
+  t.ok(FakeCognitoUserSession.calledWithMatch(sinon.match(state.user.tokens)), 'CognitoUser constructor should receive { Pool, Username }');
+
+  t.test('rejects when state.user is null', (tt) => {
+    tt.plan(1)
+
+    const fullError = {
+      message: 'User is unauthenticated',
+    }
+
+    actions.getUserAttributes({ state: { user: null } }).catch(
+      (err) => {
+        tt.deepEqual(err, fullError, 'getUserAttributes should reject with { message }');
+      }
+    );
+  });
+
+  t.test('rejects when state.user.tokens is null', (tt) => {
+    tt.plan(1)
+
+    const fullError = {
+      message: 'User is unauthenticated',
+    }
+
+    actions.getUserAttributes({ state: { user: { tokens: null } } }).catch(
+      (err) => {
+        tt.deepEqual(err, fullError, 'getUserAttributes should reject with { message }');
+      }
+    );
+  });
+
+  t.test('success', (tt) => {
+    getUserAttributes.reset();
+
+    const cognitoAttributes = [
+      { Name: 'email', Value: 'test@test.com' },
+    ]
+
+    getUserAttributes.yields(null, cognitoAttributes);
+
+    actions.getUserAttributes({ commit: commitSpy, state }).then(
+      () => {
+        tt.pass('getUserAttributes returned promise.resolve() was called');
+      }
+    );
+
+    tt.plan(6);
+
+    tt.ok(getUserAttributes.called, 'updateAttributes should be called');
+    tt.ok(getUserAttributes.calledOnce, 'updateAttributes should be called once');
+    tt.ok(commitSpy.called, 'state.commit should be called');
+    tt.ok(commitSpy.calledOnce, 'state.commit should be called exactly once');
+    tt.ok(commitSpy.calledWithMatch(
+      sinon.match(types.ATTRIBUTES),
+      sinon.match({
+        email: 'test@test.com'
+      })
+    ), `mutation ${types.ATTRIBUTES} should receive attributes map payload`);
+  });
+
+  t.test('failure', (tt) => {
+    getUserAttributes.reset();
+
+    const fullError = {
+      code: 'NotAuthorizedException',
+      message: errorMessage,
+    };
+
+    getUserAttributes.yields(fullError, null);
+
+    tt.plan(1);
+    actions.getUserAttributes({ state }).catch(
+      (err) => {
+        tt.deepEqual(err, fullError, 'getUserAttributes should reject with { code, message }');
+      }
+    );
   });
 });
 
