@@ -6,3 +6,4 @@ cache: yarn
 
 addons:
   srcclr: true
+  code_climate: true
