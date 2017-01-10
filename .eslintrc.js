@@ -11,13 +11,8 @@ module.exports = {
     browser: true,
     node: true
   },
-  // check if imports actually resolve
   'settings': {
-    'import/resolver': {
-      'webpack': {
-        'config': 'build/webpack.base.conf.js'
-      }
-    }
+    'import/resolver': 'node'
   },
   // add your custom rules here
   'rules': {

@@ -76,12 +76,10 @@ export default function actionsFactory(config) {
 
     signUp({ commit }, userInfo) {
       /* userInfo: { username, password, attributes } */
-      const userAttributes = Object.keys(userInfo.attributes || {}).map((key) => {
-        return new CognitoUserAttribute({
-          Name: key,
-          Value: userInfo.attributes[key],
-        });
-      });
+      const userAttributes = Object.keys(userInfo.attributes || {}).map(key => new CognitoUserAttribute({
+        Name: key,
+        Value: userInfo.attributes[key],
+      }));
 
       return new Promise((resolve, reject) => {
         cognitoUserPool.signUp(
@@ -219,12 +217,10 @@ export default function actionsFactory(config) {
         // Restore session without making an additional call to API
         cognitoUser.signInUserSession = new CognitoUserSession(state.user.tokens);
 
-        const attributes = Object.keys(payload || {}).map((key) => {
-          return new CognitoUserAttribute({
-            Name: key,
-            Value: payload[key],
-          });
-        });
+        const attributes = Object.keys(payload || {}).map(key => new CognitoUserAttribute({
+          Name: key,
+          Value: payload[key],
+        }));
 
         cognitoUser.updateAttributes(attributes,
           (err) => {
@@ -259,7 +255,7 @@ export default function actionsFactory(config) {
         cognitoUser.getUserAttributes((err, attributes) => {
           if (err) {
             reject(err);
-            return;            
+            return;
           }
 
           const attributesMap = (attributes || []).reduce((accum, item) => {
