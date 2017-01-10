@@ -13,7 +13,7 @@ function constructUser(cognitoUser, session) {
     tokens: {
       IdToken: session.getIdToken().getJwtToken(),
       AccessToken: session.getAccessToken().getJwtToken(),
-      RefreshToken: session.getRefreshToken().getJwtToken(),
+      RefreshToken: session.getRefreshToken().getToken(),
     },
     attributes: {},
   };

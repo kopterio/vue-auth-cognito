@@ -35,11 +35,11 @@ const userInfo = {
 // Some helpers for tests
 const idTokenMethods = { getJwtToken: sinon.stub().returns('id') };
 const accessTokenMethods = { getJwtToken: sinon.stub().returns('access') };
-const refreshTokenMethods = { getJwtToken: sinon.stub().returns('refresh') };
+const refreshTokenMethods = { getToken: sinon.stub().returns('refresh') };
 function createSessionStub() {
   idTokenMethods.getJwtToken.reset();
   accessTokenMethods.getJwtToken.reset();
-  refreshTokenMethods.getJwtToken.reset();
+  refreshTokenMethods.getToken.reset();
 
   return {
     getIdToken: sinon.stub().returns(idTokenMethods),
@@ -130,7 +130,7 @@ test('getCurrentUser', { timeout: 500 }, (t) => {
   });
 });
 
-test.only('authenticateUser', { timeout: 500 }, (t) => {
+test('authenticateUser', { timeout: 500 }, (t) => {
   FakeCognitoUser.reset();
   FakeCognitoUser.prototype.authenticateUser = sinon.stub();
 
