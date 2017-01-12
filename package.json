@@ -40,5 +40,9 @@
     "tape": "^4.6.3",
     "tape-watch": "^2.2.4",
     "vue": "^2.1.8"
+  },
+  "release-script": {
+    "defaultDryRun": "true",
+    "bowerRepo": "git@github.com:kopterio/vue-auth-cognito-bower.git"
   }
 }
