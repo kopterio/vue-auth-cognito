@@ -1,0 +1,23 @@
+{
+  "name": "vue-auth-cognito",
+  "description": "A Vue.js Vuex module for authentication using Amazon AWS Cognito",
+  "main": "lib/index.js",
+  "authors": [
+    "Evgeny Zislis <evgeny.zislis@gmail.com>",
+    "Anton Sekatski <antonsekatski@gmail.com>"
+  ],
+  "license": "MIT",
+  "keywords": [
+    "vuex",
+    "vue.js",
+    "cognito"
+  ],
+  "homepage": "https://github.com/kopterio/vue-auth-cognito",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
+}
