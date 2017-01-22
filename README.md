@@ -4,6 +4,7 @@
 [![Build Status](https://travis-ci.org/kopterio/vue-auth-cognito.svg?branch=master)](https://travis-ci.org/kopterio/vue-auth-cognito)
 [![Code Climate](https://codeclimate.com/github/kopterio/vue-auth-cognito/badges/gpa.svg)](https://codeclimate.com/github/kopterio/vue-auth-cognito)
 [![Coverage Status](https://coveralls.io/repos/github/kopterio/vue-auth-cognito/badge.svg?branch=master)](https://coveralls.io/github/kopterio/vue-auth-cognito?branch=master)
+[![Greenkeeper Badge](https://badges.greenkeeper.io/kopterio/vue-auth-cognito.svg)](https://greenkeeper.io/)
 
 This small library serves as a wrapper of Amazon Cognito for Vuex.
 
