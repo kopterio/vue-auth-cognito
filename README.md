@@ -1,5 +1,7 @@
 # vue-auth-cognito
 
+[![Greenkeeper badge](https://badges.greenkeeper.io/kopterio/vue-auth-cognito.svg)](https://greenkeeper.io/)
+
 [![npm](https://img.shields.io/npm/v/vue-auth-cognito.svg)](https://www.npmjs.com/package/vue-auth-cognito)
 [![Build Status](https://travis-ci.org/kopterio/vue-auth-cognito.svg?branch=master)](https://travis-ci.org/kopterio/vue-auth-cognito)
 [![Code Climate](https://codeclimate.com/github/kopterio/vue-auth-cognito/badges/gpa.svg)](https://codeclimate.com/github/kopterio/vue-auth-cognito)
