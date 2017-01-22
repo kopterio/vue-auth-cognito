@@ -10,4 +10,4 @@ addons:
     repo_token: $CODECLIMATE_REPO_TOKEN
 
 after_script:
-  - codeclimate-test-reporter < coverage/lcov.info
+  - '[ "$TRAVIS_PULL_REQUEST" != "true" -a -n "$CODECLIMATE_REPO_TOKEN" ] && codeclimate-test-reporter < coverage/lcov.info; true'
