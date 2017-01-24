@@ -6,6 +6,7 @@ module.exports = {
   },
   extends: 'airbnb-base',
   plugins: [
+    'html'
   ],
   env: {
     browser: true,
