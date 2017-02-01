@@ -254,6 +254,7 @@ Returned promise rejects with an error if there is no previously authenticated u
 npm install
 
 # serve examples with hot reload at localhost:8080
+npm run server # start API server for UUID examples 
 npm run dev
 
 # run all tests
