@@ -83,6 +83,7 @@ export default {
           }
         });
       }, () => {
+        this.protectedUI = false;
         this.errorMessage = 'Something went wrong...';
       });
     },
@@ -91,17 +92,24 @@ export default {
       this.resendSuccessMessage = null;
       this.resendErrorMessage = null;
 
-      this.$store.dispatch('resendConfirmationCode', {
-        username: this.username,
-      }).then(() => {
-        this.showResendButton = false;
-        this.resendSuccessMessage = 'Confirmation code has been successfuly sent';
-        // Hide success message after 5 seconds
-        setTimeout(() => {
-          this.resendSuccessMessage = null;
-        }, 5000);
-      }).catch((err) => {
-        this.resendErrorMessage = err.message;
+      this.$http.get('http://localhost:9080/v1/aws/cognito/username', {
+        params: { email: this.email },
+      }).then((response) => {
+        this.$store.dispatch('resendConfirmationCode', {
+          username: response.body.username,
+        }).then(() => {
+          this.showResendButton = false;
+          this.resendSuccessMessage = 'Confirmation code has been successfuly sent';
+          // Hide success message after 5 seconds
+          setTimeout(() => {
+            this.resendSuccessMessage = null;
+          }, 5000);
+        }).catch((err) => {
+          this.resendErrorMessage = err.message;
+        });
+      }, () => {
+        this.protectedUI = false;
+        this.errorMessage = 'Something went wrong...';
       });
     },
   },

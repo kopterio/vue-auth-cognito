@@ -7,3 +7,4 @@ config/cognito.js
 .nyc_output/
 coverage/
 lib
+examples/.env
