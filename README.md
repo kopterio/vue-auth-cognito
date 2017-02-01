@@ -247,16 +247,24 @@ Returned promise rejects with an error if there is no previously authenticated u
 }
 ```
 
-# Build Setup
+# Examples
+
+Before checking examples, please copy `examples/.env.example` to `examples/.env` and add the correct AWS crendentials to it.
 
 ``` bash
+cd examples
+
 # install dependencies
 npm install
 
 # serve examples with hot reload at localhost:8080
-npm run server # start API server for UUID examples 
+npm run server # start API server for UUID examples
 npm run dev
+```
 
+# Tests
+
+``` bash
 # run all tests
 npm test
 ```
