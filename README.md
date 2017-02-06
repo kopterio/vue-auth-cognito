@@ -251,15 +251,16 @@ Returned promise rejects with an error if there is no previously authenticated u
 
 Before checking examples, please copy `examples/.env.example` to `examples/.env` and add the correct AWS crendentials to it.
 
+`npm start` command uses [node-foreman](https://github.com/strongloop/node-foreman) package to run both API and Vue.js front-end servers. 
+
 ``` bash
 cd examples
 
 # install dependencies
 npm install
 
-# serve examples with hot reload at localhost:8080
-npm run server # start API server for UUID examples
-npm run dev
+# serve API server and examples with hot reload at localhost
+npm start
 ```
 
 # Tests

@@ -4,6 +4,8 @@ import bodyParser from 'body-parser';
 
 const app = express();
 
+// This allows sending API request to a server started on a different port using HTTP access control (CORS)
+// You can omit it in your production environment if your API server is running on the same host
 app.use((req, res, next) => {
   res.set('Access-Control-Allow-Methods', 'GET,POST');
   res.set('Access-Control-Allow-Headers', 'Content-Type,X-Amz-Date,X-Api-Key,X-Amz-Security-Token,Authorization,identityId,requestId');
@@ -20,7 +22,7 @@ app.use((req, res, next) => {
 // JSON body parsing
 app.use(bodyParser.json());
 
-const cognito = new AWS.CognitoIdentityServiceProvider({ apiVersion: '2016-04-19', region: 'us-east-1' });
+const cognito = new AWS.CognitoIdentityServiceProvider({ apiVersion: '2016-04-19' });
 
 app.get('/v1/aws/cognito/username', (req, res) => {
   cognito.listUsers({

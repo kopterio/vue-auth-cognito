@@ -7,7 +7,7 @@
   "main": "dist/index.js",
   "scripts": {
     "dev": "node build/dev-server.js",
-    "server": "nf start",
+    "start": "nf start",
     "build": "node build/build.js",
     "lint": "eslint --ext .js,.vue src test/unit/specs"
   },
