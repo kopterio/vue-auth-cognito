@@ -263,6 +263,14 @@ npm install
 npm start
 ```
 
+### UUID
+
+Cognito's username could be anything: email, a randomly generated integer, UUID, etc. It cannot be changed later so it's wise to use something unique like UUID and use attributes to keep email addresses, phone numbers and other information.
+
+For now, Cognito doesn't support some features like resending confirmation code using email attribute. It requires a username for that operation and it could be a problem if it's a generated UUID. We can potentially keep username in localStorage or a cookie but it can easily be lost if a user switches computers or browsers.
+
+That's why we need a little API endpoint to convert an email address stored in `email` attribute to a username by using Cognito API. You can find an example server in `examples/servers/index.js`.
+
 # Tests
 
 ``` bash
