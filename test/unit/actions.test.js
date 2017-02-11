@@ -10,12 +10,10 @@ const FakeCognitoUser = sinon.stub();
 const FakeCognitoUserPool = sinon.stub();
 const FakeAuthenticationDetails = sinon.stub();
 const FakeUserAttribute = sinon.stub();
-const FakeCognitoUserSession = sinon.stub();
 const actions = proxyquire('../../src/actions', {
   'amazon-cognito-identity-js': {
     CognitoUserPool: FakeCognitoUserPool,
     CognitoUser: FakeCognitoUser,
-    CognitoUserSession: FakeCognitoUserSession,
     AuthenticationDetails: FakeAuthenticationDetails,
     CognitoUserAttribute: FakeUserAttribute },
 }).default(fakeCognitoConfig); // call the default exported function with config
@@ -47,6 +45,9 @@ function createSessionStub() {
     getAccessToken: sinon.stub().returns(accessTokenMethods),
   };
 }
+
+// User Methods
+const getCognitoUserSession = FakeCognitoUser.prototype.getCognitoUserSession = sinon.stub();
 
 // Tests
 test('getCurrentUser', { timeout: 500 }, (t) => {
@@ -555,7 +556,7 @@ test('resendConfirmationCode', { timeout: 500 }, (t) => {
 
 test('changePassword', { timeout: 500 }, (t) => {
   FakeCognitoUser.reset();
-  FakeCognitoUserSession.reset();
+  getCognitoUserSession.reset();
 
   const cChange = FakeCognitoUser.prototype.changePassword = sinon.stub();
 
@@ -579,7 +580,7 @@ test('changePassword', { timeout: 500 }, (t) => {
 
   const promise = actions.changePassword({ state }, payload);
 
-  t.plan(12);
+  t.plan(11);
 
   t.ok('changePassword' in actions, 'exported actions contain a changePassword method');
   t.ok(promise instanceof Promise, 'changePassword returns a Promise');
@@ -593,9 +594,8 @@ test('changePassword', { timeout: 500 }, (t) => {
   })), 'CognitoUser constructor should receive { Pool, Username }');
 
   // Session constructor tests
-  t.ok(FakeCognitoUserSession.called, 'CognitoUserSession constructor should be called');
-  t.ok(FakeCognitoUserSession.calledOnce, 'CognitoUserSession constructor should be called once');
-  t.ok(FakeCognitoUserSession.calledWithMatch(sinon.match(state.user.tokens)), 'CognitoUser constructor should receive { Pool, Username }');
+  t.ok(getCognitoUserSession.calledOnce, 'cognitoUser.getCognitoUserSession constructor should be called once');
+  t.ok(getCognitoUserSession.calledWithMatch(sinon.match(state.user.tokens)), 'cognitoUser.getCognitoUserSession constructor should receive { Pool, Username }');
 
   t.test('rejects when state.user is null', (tt) => {
     tt.plan(1);
@@ -665,7 +665,7 @@ test('changePassword', { timeout: 500 }, (t) => {
 
 test('updateAttributes', { timeout: 500 }, (t) => {
   FakeCognitoUser.reset();
-  FakeCognitoUserSession.reset();
+  getCognitoUserSession.reset();
 
   const updateAttributes = FakeCognitoUser.prototype.updateAttributes = sinon.stub();
 
@@ -697,7 +697,7 @@ test('updateAttributes', { timeout: 500 }, (t) => {
 
   const promise = actions.updateAttributes({ state }, payload);
 
-  t.plan(13);
+  t.plan(12);
 
   t.ok('updateAttributes' in actions, 'exported actions contain a updateAttributes method');
   t.ok(promise instanceof Promise, 'updateAttributes returns a Promise');
@@ -711,9 +711,8 @@ test('updateAttributes', { timeout: 500 }, (t) => {
   })), 'CognitoUser constructor should receive { Pool, Username }');
 
   // Session constructor tests
-  t.ok(FakeCognitoUserSession.called, 'CognitoUserSession constructor should be called');
-  t.ok(FakeCognitoUserSession.calledOnce, 'CognitoUserSession constructor should be called once');
-  t.ok(FakeCognitoUserSession.calledWithMatch(sinon.match(state.user.tokens)), 'CognitoUser constructor should receive { Pool, Username }');
+  t.ok(getCognitoUserSession.calledOnce, 'CognitoUserSession constructor should be called once');
+  t.ok(getCognitoUserSession.calledWithMatch(sinon.match(state.user.tokens)), 'getCognitoUserSession should receive { Pool, Username }');
 
   t.test('rejects when state.user is null', (tt) => {
     tt.plan(1);
@@ -801,7 +800,7 @@ test('updateAttributes', { timeout: 500 }, (t) => {
 
 test('getUserAttributes', { timeout: 500 }, (t) => {
   FakeCognitoUser.reset();
-  FakeCognitoUserSession.reset();
+  getCognitoUserSession.reset();
 
   const getUserAttributes = FakeCognitoUser.prototype.getUserAttributes = sinon.stub();
 
@@ -820,7 +819,7 @@ test('getUserAttributes', { timeout: 500 }, (t) => {
 
   const promise = actions.getUserAttributes({ state });
 
-  t.plan(12);
+  t.plan(11);
 
   t.ok('getUserAttributes' in actions, 'exported actions contain a getUserAttributes method');
   t.ok(promise instanceof Promise, 'getUserAttributes returns a Promise');
@@ -834,9 +833,8 @@ test('getUserAttributes', { timeout: 500 }, (t) => {
   })), 'CognitoUser constructor should receive { Pool, Username }');
 
   // Session constructor tests
-  t.ok(FakeCognitoUserSession.called, 'CognitoUserSession constructor should be called');
-  t.ok(FakeCognitoUserSession.calledOnce, 'CognitoUserSession constructor should be called once');
-  t.ok(FakeCognitoUserSession.calledWithMatch(sinon.match(state.user.tokens)), 'CognitoUser constructor should receive { Pool, Username }');
+  t.ok(getCognitoUserSession.calledOnce, 'getCognitoUserSession constructor should be called once');
+  t.ok(getCognitoUserSession.calledWithMatch(sinon.match(state.user.tokens)), 'getCognitoUserSession should receive { Pool, Username }');
 
   t.test('rejects when state.user is null', (tt) => {
     tt.plan(1);
