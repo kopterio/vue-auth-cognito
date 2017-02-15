@@ -22,7 +22,7 @@ app.use((req, res, next) => {
 // JSON body parsing
 app.use(bodyParser.json());
 
-const cognito = new AWS.CognitoIdentityServiceProvider({ apiVersion: '2016-04-19' });
+const cognito = new AWS.CognitoIdentityServiceProvider();
 
 app.get('/v1/aws/cognito/username', (req, res) => {
   cognito.listUsers({
