@@ -2,7 +2,6 @@ import {
   CognitoUserPool,
   CognitoUserAttribute,
   CognitoUser,
-  CognitoUserSession,
   AuthenticationDetails } from 'amazon-cognito-identity-js';
 
 import * as types from './mutation-types';
@@ -185,7 +184,7 @@ export default function actionsFactory(config) {
         });
 
         // Restore session without making an additional call to API
-        cognitoUser.signInUserSession = new CognitoUserSession(state.user.tokens);
+        cognitoUser.signInUserSession = cognitoUser.getCognitoUserSession(state.user.tokens);
 
         cognitoUser.changePassword(payload.oldPassword, payload.newPassword,
           (err) => {
@@ -215,7 +214,7 @@ export default function actionsFactory(config) {
         });
 
         // Restore session without making an additional call to API
-        cognitoUser.signInUserSession = new CognitoUserSession(state.user.tokens);
+        cognitoUser.signInUserSession = cognitoUser.getCognitoUserSession(state.user.tokens);
 
         const attributes = Object.keys(payload || {}).map(key => new CognitoUserAttribute({
           Name: key,
@@ -250,7 +249,7 @@ export default function actionsFactory(config) {
         });
 
         // Restore session without making an additional call to API
-        cognitoUser.signInUserSession = new CognitoUserSession(state.user.tokens);
+        cognitoUser.signInUserSession = cognitoUser.getCognitoUserSession(state.user.tokens);
 
         cognitoUser.getUserAttributes((err, attributes) => {
           if (err) {
