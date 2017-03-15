@@ -35,7 +35,7 @@
     "eslint-config-airbnb-base": "^11.1.1",
     "eslint-plugin-import": "^2.2.0",
     "proxyquire": "^1.7.11",
-    "sinon": "^1.17.7",
+    "sinon": "^2.0.0",
     "tap": "^10.3.0",
     "tap-spec": "^4.1.1",
     "tape": "^4.6.3",
