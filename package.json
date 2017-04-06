@@ -1,6 +1,6 @@
 {
   "name": "vue-auth-cognito",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "A Vue.js Vuex module for authentication using Amazon AWS Cognito",
   "main": "lib/index.js",
   "scripts": {
