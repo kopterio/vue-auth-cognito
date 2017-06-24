@@ -31,7 +31,7 @@
     "bower": "^1.8.0",
     "codeclimate-test-reporter": "^0.4.1",
     "coveralls": "^2.12.0",
-    "eslint": "^3.17.1",
+    "eslint": "^4.1.0",
     "eslint-config-airbnb-base": "^11.1.1",
     "eslint-plugin-import": "^2.2.0",
     "proxyquire": "^1.7.11",
