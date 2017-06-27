@@ -20,7 +20,7 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "amazon-cognito-identity-js": "^1.16.0",
+    "amazon-cognito-identity-js": "^1.18.0",
     "vuex": "^2.2.1"
   },
   "devDependencies": {
