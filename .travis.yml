@@ -5,7 +5,7 @@ node_js:
 cache: yarn
 
 addons:
-  srcclr: true
+  # srcclr: true
   code_climate:
     repo_token: $CODECLIMATE_REPO_TOKEN
 
