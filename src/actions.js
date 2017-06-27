@@ -46,7 +46,7 @@ export default function actionsFactory(config) {
           }
           // Call AUTHENTICATE because it's utterly the same
           commit(types.AUTHENTICATE, constructUser(cognitoUser, session));
-          resolve();
+          resolve({currentUser: cognitoUser});
         });
       });
     },
