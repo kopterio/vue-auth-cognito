@@ -56,11 +56,17 @@ test('getCurrentUser => success', (t) => {
   fm.mock.currentUser.getSession.yields(null, sessionInstance);
 
   // call the signUp action as if it is called by vuex
-  fm.module.getCurrentUser({ commit: fm.fake.commit }).then(() => {
+  fm.module.getCurrentUser({ commit: fm.fake.commit }).then((user) => {
+    t.deepEqual(user,
+      {
+        username: 'testusername',
+        tokens: { IdToken: 'id', AccessToken: 'access', RefreshToken: 'refresh' },
+        attributes: {},
+      }, 'resolve should be called with an user object');
     t.pass('getCurrentUser returned promise.resolve() was called');
   });
 
-  t.plan(10);
+  t.plan(11);
 
   t.ok(fm.mock.currentUser.getSession.called, 'cognitoUser.getSession should be called');
   t.ok(fm.mock.currentUser.getSession.calledOnce, 'cognitoUser.getSession should be called exactly once');
