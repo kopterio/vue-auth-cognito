@@ -4,5 +4,16 @@ require('babel-register')({
   ignore: /node_modules\/(?!amazon-cognito-identity-js)/,
 });
 
-require('./actions.test');
+require('./actions/authenticateUser.test');
+require('./actions/changePassword.test');
+require('./actions/confirmPassword.test');
+require('./actions/confirmRegistraton.test');
+require('./actions/forgotPassword.test');
+require('./actions/getCurrentUser.test');
+require('./actions/getUserAttributes.test');
+require('./actions/resendConfirmationCode.test');
+require('./actions/signOut.test');
+require('./actions/signUp.test');
+require('./actions/updateAttributes.test');
+
 require('./mutations.test');

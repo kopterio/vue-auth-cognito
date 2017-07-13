@@ -44,9 +44,11 @@ export default function actionsFactory(config) {
             reject(err);
             return;
           }
+
+          const constructedUser = constructUser(cognitoUser, session);
           // Call AUTHENTICATE because it's utterly the same
-          commit(types.AUTHENTICATE, constructUser(cognitoUser, session));
-          resolve();
+          commit(types.AUTHENTICATE, constructedUser);
+          resolve(constructedUser);
         });
       });
     },
