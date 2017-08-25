@@ -12,6 +12,5 @@ The file `config/cognito.example.js` contains an example of such a config.
 npm install
 
 # serve with hot reload at localhost:8080
-npm run dev
+npm start
 ```
-

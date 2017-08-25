@@ -51,8 +51,8 @@ app.get('/v1/aws/cognito/username', (req, res) => {
   });
 });
 
-const PORT = process.env.PORT || 3000;
+const API_PORT = process.env.API_PORT || 3000;
 
-app.listen(PORT);
+app.listen(API_PORT);
 
-console.log(`Server started at 127.0.0.1:${PORT}`);
+console.log(`Server started at 127.0.0.1:${API_PORT}`);

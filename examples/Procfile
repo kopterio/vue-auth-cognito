@@ -1,2 +1,2 @@
-api: PORT=9080 babel-node server/index.js
+api: babel-node server/index.js
 web: npm run dev
