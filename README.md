@@ -249,7 +249,7 @@ Returned promise rejects with an error if there is no previously authenticated u
 
 # Examples
 
-Before checking examples, please copy `examples/.env.example` to `examples/.env` and add the correct AWS crendentials to it.
+Before checking examples, please copy `examples/config/cognito.example.js` to `examples/config/cognito.js` and add the correct AWS crendentials to it.
 
 `npm start` command uses [node-foreman](https://github.com/strongloop/node-foreman) package to run both API and Vue.js front-end servers. 
 
