@@ -1,3 +1,4 @@
+const cloneDeep = require('lodash.clonedeep')
 import {
   CognitoUserPool,
   CognitoUserAttribute,
@@ -68,11 +69,66 @@ export default function actionsFactory(config) {
         onFailure: (err) => {
           reject(err);
         },
-        onSuccess: (session, userConfirmationNecessary) => {
+        onSuccess: (session) => {
           commit(types.AUTHENTICATE, constructUser(cognitoUser, session));
-          resolve({ userConfirmationNecessary });
+          resolve({ userConfirmationNecessary: false });
         },
+        mfaRequired: function(codeDeliveryDetails) {
+          // @todo MFA not implemented yet
+          // MFA Needs a sendMFACode function similar to completeNewPasswordChallenge
+          // MFA is required to complete user authentication.
+          // Get the code from user and call
+          // cognitoUser.sendMFACode(mfaCode, this)
+        },
+
+        newPasswordRequired: function(userAttributes, requiredAttributes) {
+          // User was signed up by an admin and must provide new
+          // password and required attributes, if any, to complete
+          // authentication.
+
+          // userAttributes: object, which is the user's current profile. It will list all attributes that are associated with the user.
+          // Required attributes according to schema, which don’t have any values yet, will have blank values.
+          // requiredAttributes: list of attributes that must be set by the user along with new password to complete the sign-in.
+
+          // Get the new password and any required attributes into a format similar to userAttributes
+          // Then call completeNewPasswordChallenge
+
+          delete userAttributes.email_verified; // it's returned but not valid to submit
+
+          //Store the cognitoUser object in order to reuse it
+          commit(types.COGNITOUSER, cognitoUser);
+
+          resolve({ userConfirmationNecessary: true, userAttributes: userAttributes, requiredAttributes: requiredAttributes });
+        }
       }));
+    },
+
+    completeNewPasswordChallenge({ commit, state }, payload) {
+      console.log ('in-function')
+      // const cognitoUser = Object.assign({}, state.cognito.cognitoUser);
+      const cognitoUser = cloneDeep(state.cognitoUser);
+      // const cognitoUser = state.cognitoUser
+
+      return new Promise((resolve, reject) => {
+        if (cognitoUser === null) {
+          reject({
+            message: 'User is unauthenticated',
+          });
+          return;
+        }
+
+        cognitoUser.completeNewPasswordChallenge(payload.newPassword, payload.userAttributes, {
+          onFailure: (err) => {
+            // console.log(err);
+            reject(err);
+          },
+          onSuccess: (session) => {
+            commit(types.AUTHENTICATE, constructUser(cognitoUser, session));
+            commit(types.REMOVECOGNITOUSER);
+            resolve();
+          }
+        })
+      });
     },
 
     signUp({ commit }, userInfo) {
