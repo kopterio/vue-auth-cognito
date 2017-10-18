@@ -73,7 +73,7 @@ export default function actionsFactory(config) {
           commit(types.AUTHENTICATE, constructUser(cognitoUser, session));
           resolve({ userConfirmationNecessary: false });
         },
-        mfaRequired: function(codeDeliveryDetails) {
+        mfaRequired: function (codeDeliveryDetails) {
           // @todo MFA not implemented yet
           // MFA Needs a sendMFACode function similar to completeNewPasswordChallenge
           // MFA is required to complete user authentication.
@@ -81,7 +81,7 @@ export default function actionsFactory(config) {
           // cognitoUser.sendMFACode(mfaCode, this)
         },
 
-        newPasswordRequired: function(userAttributes, requiredAttributes) {
+        newPasswordRequired: function (userAttributes, requiredAttributes) {
           // User was signed up by an admin and must provide new
           // password and required attributes, if any, to complete
           // authentication.
@@ -119,7 +119,6 @@ export default function actionsFactory(config) {
 
         cognitoUser.completeNewPasswordChallenge(payload.newPassword, payload.userAttributes, {
           onFailure: (err) => {
-            // console.log(err);
             reject(err);
           },
           onSuccess: (session) => {
