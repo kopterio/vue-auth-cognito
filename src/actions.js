@@ -13,6 +13,7 @@ function constructUser(cognitoUser, session) {
       IdToken: session.getIdToken().getJwtToken(),
       AccessToken: session.getAccessToken().getJwtToken(),
       RefreshToken: session.getRefreshToken().getToken(),
+      RefreshTokenObj: session.getRefreshToken()
     },
     attributes: {},
   };
@@ -197,6 +198,29 @@ export default function actionsFactory(config) {
             reject(err);
           });
       });
+    },
+
+    // Only for authenticated users
+    refreshSession ({ commit, state }) {
+      const refreshToken = state.user.tokens.RefreshTokenObj
+
+      const cognitoUser = new CognitoUser({
+        Pool: cognitoUserPool,
+        Username: state.user.username,
+      });
+
+      // Restore session without making an additional call to API
+      cognitoUser.signInUserSession = cognitoUser.getCognitoUserSession(state.user.tokens);
+
+      return new Promise((resolve, reject) => cognitoUser.refreshSession(refreshToken,
+        (err, session) => {
+          if (!err) {
+            commit(types.AUTHENTICATE, constructUser(cognitoUser, session));
+            resolve();
+            return;
+          }
+          reject(err);
+        }));
     },
 
     // Only for authenticated users
