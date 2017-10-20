@@ -1,5 +1,6 @@
 import ActionsFactory from './actions';
 import mutations from './mutations';
+import getters from './getters';
 
 const state = {
   user: null,
@@ -27,5 +28,6 @@ export default class CognitoAuth {
     this.state = state;
     this.actions = new ActionsFactory(config);
     this.mutations = mutations;
+    this.getters = getters;
   }
 }
