@@ -8,6 +8,8 @@
 
 This small library serves as a wrapper of Amazon Cognito for Vuex.
 
+> As pointed out in #65 the [aws-amplify/amplify-js](https://github.com/aws-amplify/amplify-js) project officially supported by AWS has Vue.js integration. The example project is at [aws-samples/aws-amplify-vue](https://github.com/aws-samples/aws-amplify-vue).
+
 # Actions for dispatch method
 
 All actions return a promise to be able to easily control execution flow.
