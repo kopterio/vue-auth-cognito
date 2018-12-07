@@ -41,7 +41,7 @@
     "tap-spec": "^5.0.0",
     "tape": "^4.7.0",
     "tape-watch": "^2.3.0",
-    "vue": "^2.4.1"
+    "vue": "^2.5.18"
   },
   "release-script": {
     "defaultDryRun": "true",
