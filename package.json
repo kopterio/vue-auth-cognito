@@ -37,7 +37,7 @@
     "eslint-plugin-import": "^2.7.0",
     "proxyquire": "^1.8.0",
     "sinon": "^6.0.0",
-    "tap": "^11.0.0",
+    "tap": "^13.1.10",
     "tap-spec": "^5.0.0",
     "tape": "^4.7.0",
     "tape-watch": "^2.3.0",
